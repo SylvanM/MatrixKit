@@ -11,6 +11,16 @@ final class MatrixKitTests: XCTestCase {
     
     // MARK: Initializer Tests
     
-    
+    func testSubscriptAndInitializerTest() {
+        
+        let a: Matrix = [
+            [0, 2, 3, 5],
+            [1, 1, 6, 7],
+            [0, 0, 0, 2]
+        ]
+        
+        print(a)
+        
+    }
     
 }

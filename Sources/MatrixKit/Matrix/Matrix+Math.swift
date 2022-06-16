@@ -189,12 +189,18 @@ public extension Matrix {
         }
     }
     
+    mutating func subtract(_ other: Matrix) {
+        for i in 0..<flatmap.count {
+            flatmap[i] -= other.flatmap[i]
+        }
+    }
+    
     /**
      * Subtracts the values of another matrix from this matrix, out of place
      *
      * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
      */
-    func subtract(_ other: Matrix) -> Matrix {
+    func difference(subtracting other: Matrix) -> Matrix {
         if #available(macOS 10.15, *) {
             let diff = vDSP.subtract(self.flatmap, other.flatmap)
             return Matrix(flatmap: diff, cols: colCount)

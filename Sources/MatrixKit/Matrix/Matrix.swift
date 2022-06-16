@@ -66,9 +66,9 @@ public struct Matrix: MatrixInterface {
     // MARK: Static Producers
     
     static func identity(forDim dim: Int) -> Matrix {
-        let iden = Matrix(rows: dim, cols: dim)
+        var iden = Matrix(rows: dim, cols: dim)
         for i in 0..<dim {
-            iden[i, i]
+            iden[i, i] = 1
         }
         return iden
     }
@@ -111,7 +111,7 @@ public struct Matrix: MatrixInterface {
      * This matrix in rowwise array form
      */
     public var rows: [[Element]] {
-        let rowPattern = [[Element]](repeating: [Element](repeating: 0, count: rowCount), count: colCount)
+        let rowPattern = [[Element]](repeating: [Element](repeating: 0, count: colCount), count: rowCount)
         return flatmap.overlay(onto: rowPattern)
     }
     
@@ -119,9 +119,9 @@ public struct Matrix: MatrixInterface {
      * This matrix in column-wise array form
      */
     public var columns: [[Element]] {
-        var colArray = [[Element]](repeating: [Element](repeating: 0, count: colCount), count: rowCount)
+        var colArray = [[Element]](repeating: [Element](repeating: 0, count: rowCount), count: colCount)
         
-        for i in 0..<colCount {
+        for i in 0..<rowCount {
             colArray[i] = self[col: i]
         }
         

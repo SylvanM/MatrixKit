@@ -104,15 +104,17 @@ internal protocol MatrixInterface: CustomStringConvertible, ExpressibleByArrayLi
     
     func sum(adding: Matrix) -> Matrix
     
+    func difference(subtracting: Matrix) -> Matrix
+    
     func leftMultiply(by: Matrix) -> Matrix
     
     func rightMultiply(onto: Matrix) -> Matrix
     
     // MARK: Operators
     
-    static func == (lhs: Self, rhs: Self) -> Self
+    static func == (lhs: Self, rhs: Self) -> Bool
     
-    static func ~ (lhs: Self, rhs: Self) -> Self
+    static func ~ (lhs: Self, rhs: Self) -> Bool
     
     static func + (lhs: Self, rhs: Self) -> Self
     
