@@ -56,6 +56,8 @@ internal protocol MatrixInterface: CustomStringConvertible, ExpressibleByArrayLi
     
     init(flatmap: [Matrix.Element], cols: Int)
     
+    static func identity(forDim: Int) -> Matrix
+    
     // MARK: - Computed properties
     
     var determinant: Double { get }
@@ -98,10 +100,30 @@ internal protocol MatrixInterface: CustomStringConvertible, ExpressibleByArrayLi
     
     mutating func add(_: Matrix)
     
+    mutating func subtract(_: Matrix)
+    
     func sum(adding: Matrix) -> Matrix
     
     func leftMultiply(by: Matrix) -> Matrix
     
     func rightMultiply(onto: Matrix) -> Matrix
+    
+    // MARK: Operators
+    
+    static func == (lhs: Self, rhs: Self) -> Self
+    
+    static func ~ (lhs: Self, rhs: Self) -> Self
+    
+    static func + (lhs: Self, rhs: Self) -> Self
+    
+    static func += (lhs: inout Self, rhs: Self)
+    
+    static func * (lhs: Matrix.Element, rhs: Self) -> Self
+    
+    static func * (lhs: Self, rhs: Matrix.Element) -> Self
+    
+    static func *= (lhs: inout Self, rhs: Matrix.Element)
+    
+    static func * (lhs: Self, rhs: Self) -> Self
     
 }

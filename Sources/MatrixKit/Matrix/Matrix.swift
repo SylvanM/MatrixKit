@@ -63,6 +63,16 @@ public struct Matrix: MatrixInterface {
         self.rowCount = flatmap.count / cols
     }
     
+    // MARK: Static Producers
+    
+    static func identity(forDim dim: Int) -> Matrix {
+        let iden = Matrix(rows: dim, cols: dim)
+        for i in 0..<dim {
+            iden[i, i]
+        }
+        return iden
+    }
+    
     // MARK: - Properties
     
     /**
@@ -74,6 +84,8 @@ public struct Matrix: MatrixInterface {
      * The buffer pointer to the flat map of elements
      */
     internal lazy var bufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
+    
+    // MARK: Public Properties
     
     /**
      * The amount of columns in this matrix
