@@ -101,6 +101,8 @@ public extension Matrix {
         return ref
     }
     
+    #warning("There is a horrendous amount of code duplication here, and frankly it embarasses me. This will do for now.")
+    
     /**
      * `true` if this matrix is in row echelon form.
      *
@@ -177,7 +179,7 @@ public extension Matrix {
             
             let pivotValue = self[pivotRow, col]
             
-            if pivotValue != 0 {
+            if pivotValue != 1 {
                 return false
             }
             
@@ -203,8 +205,27 @@ public extension Matrix {
      * The rank of this matrix
      */
     var rank: Int {
-        #warning("Unimplemented - rank")
-        return 1
+        let ref = rowEchelonForm
+        
+        var col = 0
+        var pivotRow = col
+        var pivots = 0
+        
+        while col < ref.colCount && pivotRow < ref.rowCount {
+            
+            if ref[pivotRow, col] == 0 {
+                col += 1
+                continue
+            }
+            
+            // we found a valid pivot, now begin looking for the next pivot down and to the right
+            pivots += 1
+            
+            col += 1
+            pivotRow += 1
+        }
+        
+        return pivots
     }
     
     /**
