@@ -27,8 +27,6 @@ public extension Matrix {
                 return "[]"
             }
             
-            // I could probably just make a check at the beginning to see if it's a 1-row matrix
-            
             if rowCount == 1 {
                 string += "[ "
             } else {
@@ -78,8 +76,13 @@ public extension Matrix {
         var j = 0
         
         while i < flatmap.count {
+            
             if i % colCount == col {
                 i += 1
+                
+                if i == flatmap.count {
+                    break
+                }
             }
             
             newFlatmap[j] = flatmap[i]

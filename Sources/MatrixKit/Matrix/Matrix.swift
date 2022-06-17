@@ -10,7 +10,7 @@ import Foundation
 /**
  * A matrix
  */
-public struct Matrix: MatrixInterface {
+public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
     
     // MARK: - Typealiases
     
@@ -20,6 +20,30 @@ public struct Matrix: MatrixInterface {
     public typealias Element = Double
     
     public typealias ArrayLiteralElement = [Element]
+    
+    // MARK: - Properties
+    
+    /**
+     * A flattened, one dimensional representation of this matrix, row-wise.
+     */
+    internal var flatmap: [Element]
+    
+    /**
+     * The buffer pointer to the flat map of elements
+     */
+    internal lazy var bufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
+    
+    // MARK: Public Properties
+    
+    /**
+     * The amount of columns in this matrix
+     */
+    public let colCount: Int
+    
+    /**
+     * The amount of rows in this matrix
+     */
+    public let rowCount: Int
     
     // MARK: - Initializers
 
@@ -73,36 +97,22 @@ public struct Matrix: MatrixInterface {
         return iden
     }
     
-    // MARK: - Properties
-    
-    /**
-     * A flattened, one dimensional representation of this matrix, row-wise.
-     */
-    internal var flatmap: [Element]
-    
-    /**
-     * The buffer pointer to the flat map of elements
-     */
-    internal lazy var bufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
-    
-    // MARK: Public Properties
-    
-    /**
-     * The amount of columns in this matrix
-     */
-    public let colCount: Int
-    
-    /**
-     * The amount of rows in this matrix
-     */
-    public let rowCount: Int
-    
     // MARK: Computed Properties
+    
+    /**
+     * Whether or not this is a square matrix
+     */
+    public var isSquare: Bool {
+        rowCount == colCount
+    }
     
     public var description: String {
         makeStringDescription()
     }
     
+    /**
+     * The total number of entries in this matrix
+     */
     public var count: Int {
         flatmap.count
     }
@@ -121,7 +131,7 @@ public struct Matrix: MatrixInterface {
     public var columns: [[Element]] {
         var colArray = [[Element]](repeating: [Element](repeating: 0, count: rowCount), count: colCount)
         
-        for i in 0..<rowCount {
+        for i in 0..<colCount {
             colArray[i] = self[col: i]
         }
         
@@ -132,6 +142,8 @@ public struct Matrix: MatrixInterface {
     
     /**
      * Accesses the row at `row`
+     *
+     * This is equivalent to `self[row: row]`
      */
     public subscript(row: Int) -> [Element] {
         get { self[row: row] }
@@ -143,7 +155,7 @@ public struct Matrix: MatrixInterface {
      */
     public subscript(row row: Int) -> [Element] {
         get { Array(flatmap[(row * colCount)..<(colCount * (row + 1))]) }
-        set { flatmap[row..<(colCount * (row + 1))] = ArraySlice(newValue) }
+        set { flatmap[(colCount * row)..<(colCount * (row + 1))] = ArraySlice(newValue) }
     }
     
     /**
@@ -161,23 +173,54 @@ public struct Matrix: MatrixInterface {
         get {
             var cols = [Element](repeating: 0, count: rowCount)
             for i in 0..<rowCount {
-                cols[i] = flatmap[i * rowCount + col]
+                cols[i] = self[i, col]
             }
             return cols
         }
         set {
             for i in 0..<rowCount {
-                flatmap[i * rowCount + col] = newValue[i]
+                self[i, col] = newValue[i]
             }
         }
     }
     
     // MARK: Enumerations
     
+    /**
+     * A row or column operation to be applied to a matrix.
+     */
     public enum ElementaryOperation {
-        case scale(Int, Double)
+        
+        /**
+         * The operation of scaling a row or column (given by its index) by a constant scalar
+         */
+        case scale(index: Int, by: Double)
+        
+        /**
+         * The operation of switching two rows (or columns), given by their indices
+         */
         case swap(Int, Int)
+        
+        /**
+         * The operation of adding the row (column) at index `index` to the row (column) at index `toIndex`, after
+         * first being scaled by `scalar`.
+         *
+         * For example, the row operation `.add(scalar: 5, index: 2, toIndex 1)`, when applied
+         * to the matrix:
+         * ```
+         * ┌ 0.0  2.0  3.0  5.0 ┐
+         * │ 1.0  1.0  6.0  7.0 │
+         * └ 0.0  0.0  0.0  2.0 ┘
+         * ```
+         * should yield the matrix
+         * ```
+         * ┌ 0.0  2.0  3.0  5.0  ┐
+         * │ 1.0  1.0  6.0  17.0 │
+         * └ 0.0  0.0  0.0  2.0  ┘
+         * ```
+         */
         case add(scalar: Double, index: Int, toIndex: Int)
+        
     }
     
 }

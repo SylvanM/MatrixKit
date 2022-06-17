@@ -13,6 +13,9 @@ public extension Matrix {
     
     // MARK: - Comparisons
     
+    /**
+     * Returns `true` if this matrix is equivalent to another matrix.
+     */
     func equals(_ other: Matrix) -> Bool {
         self.colCount == other.colCount && self.flatmap == other.flatmap
     }
@@ -63,6 +66,7 @@ public extension Matrix {
         case 1: return flatmap[0]
             
         default: // the recursive case!
+            
             // Idea: Maybe search and see if there's a particular row/column that has a lot of zeros, and do co-factor expansion along that?
             var sum: Element = 0
             
@@ -71,7 +75,7 @@ public extension Matrix {
                 let submatrix = omitting(row: 0).omitting(col: i)
                 let det = submatrix.determinant
                 
-                if i % 2 == 0 {
+                if i % 2 == 1 {
                     scalar = -scalar
                 }
                 
@@ -83,27 +87,221 @@ public extension Matrix {
             
     }
     
-    var rowEchelon: Matrix {
+    /**
+     * This matrix in row echelon form.
+     *
+     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
+     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
+     */
+    var rowEchelonForm: Matrix {
+        // TODO: Maybe add a check to see if this is already in row echelon form?
+        
+        var ref = self
+        Matrix.rowEchelon(on: &ref)
+        return ref
+    }
+    
+    /**
+     * This matrix in reduced row echelon form.
+     *
+     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
+     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
+     */
+    var reducedRowEchelonForm: Matrix {
+        // TODO: Maybe add a check to see if this is already in reduced row echelon form?
+        
+        var rref = self
+        Matrix.reducedRowEchelon(on: &rref)
+        return rref
+    }
+    
+    /**
+     * `true` if this matrix is in row echelon form.
+     *
+     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
+     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
+     */
+    var isRowEchelonForm: Bool {
         #warning("Unimplemented - rowEchelon")
-        return self
+        return false
     }
     
-    var reducedRowEchelon: Matrix {
+    /**
+     * `true` if this matrix is in *reduced* row echelon form.
+     *
+     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
+     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
+     */
+    var isReducedRowEchelonForm: Bool {
         #warning("Unimplemented - reducedRowEchelon")
-        return self
+        return false
     }
     
+    /**
+     * The rank of this matrix
+     */
     var rank: Int {
         #warning("Unimplemented - rank")
         return 1
     }
     
+    /**
+     * The matrix `A` such that `A * self` is the identity matrix of this matrix.
+     *
+     * Requires `self.isSquare`.
+     */
+    var inverse: Matrix {
+        var rref = self
+        var inv = Matrix.identity(forDim: rowCount)
+        Matrix.reducedRowEchelon(on: &rref, withRecipient: &inv)
+        return inv
+    }
+    
     // MARK: Matrix Operations
     
+    /**
+     * Scales every element of this matrix by a scalar, in place.
+     *
+     * - Parameter scalar: `Double` by which to scale every element of this matrix.
+     */
+    mutating func scale(by scalar: Double) {
+//        var scalar_p = scalar
+//        vDSP_vsmulD(bufferPointer.baseAddress!, 1, &scalar_p, bufferPointer.baseAddress!, 1, vDSP_Length(flatmap.count))
+        
+        for i in 0..<flatmap.count {
+            flatmap[i] *= scalar
+        }
+    }
     
+    /**
+     * The result of scaling this matrix by a scalar, out of place.
+     *
+     * - Parameter scalar: `Double` by which to scale every element of this matrix
+     * - Returns: The result of scaling this matrix by a scalar.
+     */
+    func scaled(by scalar: Double) -> Matrix {
+        var new = self
+        new.scale(by: scalar)
+        return new
+    }
+    
+    /**
+     * Adds every element of another matrix to the corresponding element of this matrix, in place.
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     * - Parameter other: `Matrix` to add.
+     */
+    mutating func add(_ other: Matrix) {
+        for i in 0..<flatmap.count {
+            flatmap[i] += other.flatmap[i]
+        }
+    }
+    
+    /**
+     * Subtracts every element of another matrix to the corresponding element of this matrix, in place.
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     * - Parameter other: `Matrix` to subtract.
+     */
+    mutating func subtract(_ other: Matrix) {
+        for i in 0..<flatmap.count {
+            flatmap[i] -= other.flatmap[i]
+        }
+    }
+    
+    /**
+     * Subtracts the values of another matrix from this matrix, out of place
+     *
+     * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
+     * - Parameter other: `Matrix` to subtract.
+     * - Returns: The difference of this matrix and `other`.
+     */
+    func difference(subtracting other: Matrix) -> Matrix {
+        if #available(macOS 10.15, *) {
+            let diff = vDSP.subtract(self.flatmap, other.flatmap)
+            return Matrix(flatmap: diff, cols: colCount)
+        } else {
+            let sum = zip(self.flatmap, other.flatmap).map { (x, y) in
+                x - y
+            }
+            return Matrix(flatmap: sum, cols: self.colCount)
+        }
+    }
+    
+    /**
+     * Adds the values of another matrix to this matrix, out of place.
+     *
+     * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
+     * - Parameter other: `Matrix` to add
+     * - Returns: The sum of `self` and `other`.
+     */
+    func sum(adding other: Matrix) -> Matrix {
+        if #available(macOS 10.15, *) {
+            let sum = vDSP.add(self.flatmap, other.flatmap)
+            return Matrix(flatmap: sum, cols: self.colCount)
+        } else {
+            let sum = zip(self.flatmap, other.flatmap).map { (x, y) in
+                x + y
+            }
+            return Matrix(flatmap: sum, cols: self.colCount)
+        }
+    }
+    
+    /**
+     * Multiplies this matrix by another matrix on the left.
+     *
+     * This performs the matrix multiplication `lhs * self`.
+     *
+     * - Precondition: `lhs.colCount == self.rowCount`
+     *
+     * - Parameter lhs: `Matrix` by which to multiply
+     * - Returns: The matrix product `lhs * self`
+     */
+    func leftMultiply(by lhs: Matrix) -> Matrix {
+        
+        // this is LUDICROUSLY slow and is ONLY temporary
+        
+        var product = Matrix(rows: lhs.rowCount, cols: self.colCount)
+        
+        for i in 0..<product.rowCount {
+            for j in 0..<product.colCount {
+                
+                var sum: Double = 0
+                
+                for k in 0..<lhs.colCount {
+                    sum += lhs[i, k] * self[k, j]
+                }
+                
+                product[i, j] = sum
+                
+            }
+        }
+        
+        return product
+    }
+    
+    /**
+     * Multiplies this another by this matrix.
+     *
+     * This performs the matrix multiplication `self * rhs`.
+     *
+     * - Precondition: `self.colCount == rhs.rowCount`
+     *
+     * - Parameter rhs: `Matrix` to multiply by `self`
+     * - Returns: The matrix product `self * rhs`
+     */
+    func rightMultiply(onto rhs: Matrix) -> Matrix {
+        rhs.leftMultiply(by: self)
+    }
+    
+    // MARK: - Row Operations and Guassian Elimination
     
     /**
      * Applies a row operation on this matrix
+     *
+     * - Precondition: The affected indices in `rowOperation` are not out of bounds for this matrix
+     *
+     * - Parameter rowOperation: `ElementaryOperation` to perform as a row operation
      */
     #warning("lazy implementation")
     mutating func apply(rowOperation: ElementaryOperation) {
@@ -111,7 +309,7 @@ public extension Matrix {
         switch rowOperation {
         case .scale(let row, let scalar_c):
             
-            for i in (colCount * row)..<((colCount + 1) * row) {
+            for i in (colCount * row)..<(colCount * (row + 1)) {
                 flatmap[i] *= scalar_c
             }
             
@@ -130,6 +328,13 @@ public extension Matrix {
         }
     }
     
+    /**
+     * Applies a column operation on this matrix
+     *
+     * - Precondition: The affected indices in `columnOperation` are not out of bounds for this matrix
+     *
+     * - Parameter columnOperation: `ElementaryOperation` to perform as a column operation
+     */
     mutating func apply(columnOperation: ElementaryOperation) {
         
         switch columnOperation {
@@ -137,7 +342,7 @@ public extension Matrix {
         case .scale(let col, let scalar):
             
             for i in 0..<rowCount {
-                flatmap[i * colCount + col] *= scalar
+                self[col: col][i] *= scalar
             }
             
         case .swap(let colA, let colB):
@@ -156,104 +361,111 @@ public extension Matrix {
         
     }
     
+    /**
+     * Returns the result of applying a row operation on this matrix
+     *
+     * - Precondition: The affected indices in `rowOperation` are not out of bounds for this matrix
+     *
+     * - Parameter rowOperation: `ElementaryOperation` to perform as a row operation
+     *
+     * - Returns: The result of applying `rowOperation` to `self`
+     */
     func applying(rowOperation: ElementaryOperation) -> Matrix {
         var new = self
         new.apply(rowOperation: rowOperation)
         return new
     }
     
+    /**
+     * Returns the result of applying a column operation on this matrix
+     *
+     * - Precondition: The affected indices in `colOperation` are not out of bounds for this matrix
+     *
+     * - Parameter colOperation: `ElementaryOperation` to perform as a col operation
+     *
+     * - Returns: The result of applying `colOperation` to `self`
+     */
     func applying(columnOperation: ElementaryOperation) -> Matrix {
         var new = self
         new.apply(columnOperation: columnOperation)
         return new
     }
     
-    mutating func scale(by scalar: Double) {
-//        var scalar_p = scalar
-//        vDSP_vsmulD(bufferPointer.baseAddress!, 1, &scalar_p, bufferPointer.baseAddress!, 1, vDSP_Length(flatmap.count))
+    
+    
+}
+
+public extension Matrix {
+    
+    // MARK: Internal Guassian Elimination
+    
+    /**
+     * Performs row reduction to echelon form, but **not** necessarily *reduced* row echelon form,
+     * and if this is also being used to compute an inverse, the sequence of row operations perfomed on this matrix
+     * are also performed on a given matrix as a recipient.
+     *
+     * - Parameter matrix: The matrix on which to perform row reduction
+     * - Parameter recipient: An optional pointer to the matrix on which to perform the same operations performed on `matrix`, by default `nil`.
+     */
+    static func rowEchelon(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil) {
         
-        for i in 0..<flatmap.count {
-            flatmap[i] *= scalar
-        }
-    }
-    
-    func scaled(by scalar: Double) -> Matrix {
-        var new = self
-        new.scale(by: scalar)
-        return new
-    }
-    
-    mutating func add(_ other: Matrix) {
-        for i in 0..<flatmap.count {
-            flatmap[i] += other.flatmap[i]
-        }
-    }
-    
-    mutating func subtract(_ other: Matrix) {
-        for i in 0..<flatmap.count {
-            flatmap[i] -= other.flatmap[i]
-        }
+        
+        
     }
     
     /**
-     * Subtracts the values of another matrix from this matrix, out of place
+     * Reduces a matrix to reduced row echelon form with guassian elimination,
+     * and if this is also being used to compute an inverse, the sequence of row operations perfomed on this matrix
+     * are also performed on a given matrix as a recipient.
      *
-     * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
+     * - Parameter matrix: The matrix on which to perform row reduction
+     * - Parameter recipient: An optional pointer to the matrix on which to perform the same operations performed on `matrix`, by default `nil`.
      */
-    func difference(subtracting other: Matrix) -> Matrix {
-        if #available(macOS 10.15, *) {
-            let diff = vDSP.subtract(self.flatmap, other.flatmap)
-            return Matrix(flatmap: diff, cols: colCount)
-        } else {
-            let sum = zip(self.flatmap, other.flatmap).map { (x, y) in
-                x - y
+    static func reducedRowEchelon(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil) {
+        
+        rowEchelon(on: &matrix, withRecipient: recipient)
+        
+        var col = 0
+        var pivotRow = col // where we're looking for the pivot to use
+        
+        while col < matrix.colCount {
+            
+            // we're done if we hit the bottom of the matrix!
+            if pivotRow == matrix.rowCount {
+                break
             }
-            return Matrix(flatmap: sum, cols: self.colCount)
-        }
-    }
-    
-    /**
-     * Adds the values of another matrix to this matrix, out of place.
-     *
-     * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
-     */
-    func sum(adding other: Matrix) -> Matrix {
-        if #available(macOS 10.15, *) {
-            let sum = vDSP.add(self.flatmap, other.flatmap)
-            return Matrix(flatmap: sum, cols: self.colCount)
-        } else {
-            let sum = zip(self.flatmap, other.flatmap).map { (x, y) in
-                x + y
+            
+            if matrix[pivotRow, col] == 0 {
+                col += 1
+                continue
             }
-            return Matrix(flatmap: sum, cols: self.colCount)
-        }
-    }
-    
-    func leftMultiply(by lhs: Matrix) -> Matrix {
-        
-        // this is LUDICROUSLY slow and is ONLY temporary
-        
-        var product = Matrix(rows: lhs.rowCount, cols: self.colCount)
-        
-        for i in 0..<product.rowCount {
-            for j in 0..<product.colCount {
+            
+            // we found a pivot, now use it to ANNIAHLATE the other entries in its column, after normalizing this row.
+            
+            let pivotValue = matrix[pivotRow, col]
+            let normalizeOp = ElementaryOperation.scale(index: pivotRow, by: 1 / pivotValue)
+            
+            matrix.apply(rowOperation: normalizeOp)
+            recipient?.pointee.apply(rowOperation: normalizeOp)
+            
+            for row in 0..<matrix.rowCount {
                 
-                var sum: Double = 0
+                if row == pivotRow { continue }
+                let entry = matrix[row, col]
+                if entry == 0 { continue }
                 
-                for k in 0..<lhs.colCount {
-                    sum += lhs[i, k] * self[k, i]
-                }
+                let elimOp = ElementaryOperation.add(scalar: -entry, index: pivotRow, toIndex: row)
                 
-                product[i, j] = sum
+                matrix.apply(rowOperation: elimOp)
+                recipient?.pointee.apply(rowOperation: elimOp)
                 
             }
+            
+            col += 1
+            pivotRow += 1
+            
         }
         
-        return product
-    }
-    
-    func rightMultiply(onto rhs: Matrix) -> Matrix {
-        rhs.leftMultiply(by: self)
     }
     
 }

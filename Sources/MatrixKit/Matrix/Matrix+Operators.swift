@@ -31,6 +31,14 @@ public extension Matrix {
         lhs.add(rhs)
     }
     
+    static func - (lhs: Matrix, rhs: Matrix) -> Matrix {
+        lhs.difference(subtracting: rhs)
+    }
+    
+    static func -= (lhs: inout Matrix, rhs: Matrix) {
+        lhs.subtract(rhs)
+    }
+    
     static func * (lhs: Element, rhs: Matrix) -> Matrix {
         rhs.scaled(by: lhs)
     }
