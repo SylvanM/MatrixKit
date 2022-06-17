@@ -91,7 +91,7 @@ public extension Matrix {
      * This matrix in row echelon form.
      *
      * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
-     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
+     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form
      */
     var rowEchelonForm: Matrix {
         // TODO: Maybe add a check to see if this is already in row echelon form?
@@ -99,6 +99,45 @@ public extension Matrix {
         var ref = self
         Matrix.rowEchelon(on: &ref)
         return ref
+    }
+    
+    /**
+     * `true` if this matrix is in row echelon form.
+     *
+     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
+     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form
+     *
+     * Here's an interesting problem. Inside this function, the rank is easily computed with little additional computation.
+     * How can I not waste computation time when reading the `rank` property if a matrix is already in row echelon form?
+     *
+     * I can think of some really messy ways to do it, but I really want to avoid adding a  `didSet` listener on `flatmap`
+     * to see if the matrix is updated and the rank needs to be re-calculated.
+     */
+    var isRowEchelonForm: Bool {
+        var col = 0
+        var pivotRow = col
+        
+        while col < colCount && pivotRow < rowCount {
+            
+            // make sure this is a valid pivot by assuring that all elements below it are zero
+            
+            for i in pivotRow..<rowCount {
+                if !self[i, col].isZero { return false }
+            }
+            
+            if self[pivotRow, col] == 0 {
+                col += 1
+                continue
+            }
+            
+            // we found a valid pivot, now begin looking for the next pivot down and to the right
+            
+            col += 1
+            pivotRow += 1
+            
+        }
+        
+        return true
     }
     
     /**
@@ -116,25 +155,48 @@ public extension Matrix {
     }
     
     /**
-     * `true` if this matrix is in row echelon form.
-     *
-     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
-     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
-     */
-    var isRowEchelonForm: Bool {
-        #warning("Unimplemented - rowEchelon")
-        return false
-    }
-    
-    /**
      * `true` if this matrix is in *reduced* row echelon form.
      *
      * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
      * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
      */
     var isReducedRowEchelonForm: Bool {
-        #warning("Unimplemented - reducedRowEchelon")
-        return false
+        guard isRowEchelonForm else { return false }
+        
+        // go through each pivot
+        
+        var col = 0
+        var pivotRow = col // where we're looking for the pivot to use
+        
+        while col < colCount && pivotRow < rowCount {
+            
+            if self[pivotRow, col] == 0 {
+                col += 1
+                continue
+            }
+            
+            let pivotValue = self[pivotRow, col]
+            
+            if pivotValue != 0 {
+                return false
+            }
+            
+            for row in 0..<rowCount {
+                if row == pivotRow {
+                    continue
+                } else {
+                    if self[row, col] != 0 {
+                        return false
+                    }
+                }
+            }
+            
+            col += 1
+            pivotRow += 1
+            
+        }
+        
+        return true
     }
     
     /**
@@ -391,8 +453,6 @@ public extension Matrix {
         return new
     }
     
-    
-    
 }
 
 public extension Matrix {
@@ -428,12 +488,7 @@ public extension Matrix {
         var col = 0
         var pivotRow = col // where we're looking for the pivot to use
         
-        while col < matrix.colCount {
-            
-            // we're done if we hit the bottom of the matrix!
-            if pivotRow == matrix.rowCount {
-                break
-            }
+        while col < matrix.colCount && pivotRow < matrix.rowCount {
             
             if matrix[pivotRow, col] == 0 {
                 col += 1
@@ -467,5 +522,13 @@ public extension Matrix {
         }
         
     }
+    
+}
+
+private extension Matrix {
+    
+    /**
+     * This just provides a way of more efficiently computing the rank, if 
+     */
     
 }
