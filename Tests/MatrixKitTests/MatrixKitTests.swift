@@ -122,19 +122,49 @@ final class MatrixKitTests: XCTestCase {
     
     func testRowReduction() {
         
-        let echelonForm: Matrix = [
+        let echelonFormA: Matrix = [
             [4, 0, 2, 4, 1],
             [0, 0, 1, 9, 1],
             [0, 0, 0, 4, 0]
         ]
         
-        let reduced: Matrix = [
+        let reducedA: Matrix = [
             [1, 0, 0, 0, -0.25],
             [0, 0, 1, 0, 1],
             [0, 0, 0, 1, 0]
         ]
         
-        XCTAssertEqual(echelonForm.reducedRowEchelonForm, reduced)
+        XCTAssertFalse(echelonFormA.isReducedRowEchelonForm)
+        XCTAssertTrue(echelonFormA.isRowEchelonForm)
+        XCTAssertEqual(echelonFormA.rowEchelonForm, echelonFormA)
+        XCTAssertEqual(echelonFormA.reducedRowEchelonForm, reducedA)
+        
+        let matrixB: Matrix = [
+            [1, 5, 1],
+            [2, 11, 5],
+            [8, 6, 2],
+            [0, 88, -10],
+            [4, 2, 1]
+        ]
+        
+        print(matrixB.rowEchelonForm)
+        
+        let rrefB: Matrix = [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [0, 0, 0],
+            [0, 0, 0]
+        ]
+        
+        XCTAssertFalse(matrixB.isRowEchelonForm)
+        XCTAssertFalse(matrixB.isReducedRowEchelonForm)
+        
+        XCTAssertTrue(rrefB.isReducedRowEchelonForm)
+        
+        XCTAssertEqual(matrixB.reducedRowEchelonForm, rrefB)
+        
+        XCTAssertTrue(matrixB.reducedRowEchelonForm.isReducedRowEchelonForm)
         
     }
     
