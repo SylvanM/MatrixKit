@@ -565,27 +565,13 @@ private extension Matrix {
     }
     
     func computeRank() -> Int {
-        let ref = rowEchelonForm
-        
-        var col = 0
-        var pivotRow = col
-        var pivots = 0
-        
-        while col < ref.colCount && pivotRow < ref.rowCount {
-            
-            if ref[pivotRow, col] == 0 {
-                col += 1
-                continue
-            }
-            
-            // we found a valid pivot, now begin looking for the next pivot down and to the right
-            pivots += 1
-            
-            col += 1
-            pivotRow += 1
+        var pivots = [Int](repeating: 0, count: colCount)
+        _ = rowEchelonForm.isRowEchelonForm(pivotsRef: &pivots)
+        var pivotCount = 0
+        for i in 0..<pivots.count {
+            pivotCount += pivots[i] == -1 ? 0 : 1
         }
-        
-        return pivots
+        return pivotCount
     }
     
     func computeInverse() -> Matrix {

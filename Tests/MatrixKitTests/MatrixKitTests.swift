@@ -173,7 +173,53 @@ final class MatrixKitTests: XCTestCase {
             
         }
         
-        // Test corner cases?
+    }
+    
+    func testRankComputation() {
+        
+        // identity is full rank
+        for dim in 1...100 {
+            XCTAssertEqual(Matrix.identity(forDim: dim).rank, dim)
+        }
+        
+        // use some known-value tests that I got from https://www.cse.cuhk.edu.hk/~taoyf/course/1410/19-spr/ex/ex-matrix-rank-sol.pdf
+        
+        let m1: Matrix = [
+            [0, 16, 8, 4],
+            [2, 4, 8, 16],
+            [16, 8, 4, 2],
+            [4, 8, 16, 2]
+        ]
+        
+        XCTAssertEqual(m1.rank, 4)
+        
+        let m2: Matrix = [
+            [4, -6, 0],
+            [-6, 0, 1],
+            [0, 9, -1],
+            [0, 1, 4]
+        ]
+        
+        XCTAssertEqual(m2.rank, 3)
+        
+        let m3: Matrix = [
+            [3, 0, 1, 2],
+            [6, 1, 0, 0],
+            [12, 1, 2, 4],
+            [6, 0, 2, 4],
+            [9, 0, 1, 2]
+        ]
+        
+        XCTAssertEqual(m3.rank, 3)
+        
+        // test a little theorem
+        
+        for _ in 1...100 {
+            let a = makeRandomMatrix(rows: Int.random(in: 10...100), cols: Int.random(in: 10...100))
+            let b = makeRandomMatrix(rows: a.colCount, cols: Int.random(in: 10...100))
+            
+            XCTAssertTrue((a * b).rank <= a.rank)
+        }
         
     }
     
