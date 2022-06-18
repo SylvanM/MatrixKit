@@ -61,16 +61,63 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     }
 
     /**
-     * Creates an empty matrix with specified dimension
+     * Creates a matrix filled of specified dimensions filled with zeros
      */
     public init(rows: Int, cols: Int) {
         flatmap = [Element](repeating: 0, count: rows * cols)
         rowCount = rows
         colCount = cols
     }
-
+    
     public init(arrayLiteral elements: [Element]...) {
         self.init(elements)
+    }
+    
+    /**
+     * Creates a matrix from an array of rows
+     */
+    public init(rowArray rows: [[Element]]) {
+        self.init(rows)
+    }
+    
+    /**
+     * Creates a matrix from another matrix
+     */
+    public init(_ other: Matrix) {
+        self.flatmap = other.flatmap
+        self.rowCount = other.rowCount
+        self.colCount = other.colCount
+    }
+    
+    /**
+     * Creates a matrix with one row of elements
+     */
+    public init(_ row: [Element]) {
+        self.flatmap = row
+        self.rowCount = 1
+        self.colCount = row.count
+    }
+    
+    /**
+     * Creates a matrix with one column from a vector
+     */
+    public init(vector: [Element]) {
+        self.flatmap = vector
+        self.rowCount = vector.count
+        self.colCount = 1
+    }
+    
+    /**
+     * Creates a matrix from an array of columns
+     */
+    public init(colArray cols: [[Element]]) {
+        var m = Matrix(rows: cols.first!.count, cols: cols.count)
+        for c in 0..<m.colCount {
+            for r in 0..<m.rowCount {
+                m[r, c] = cols[c][r]
+            }
+        }
+        self.init(m)
     }
 
     /**

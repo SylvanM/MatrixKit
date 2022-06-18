@@ -4,6 +4,16 @@ import Accelerate
 
 final class MatrixKitTests: XCTestCase {
     
+    func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = -1000...1000) -> Matrix {
+        var randMat = Matrix(rows: rows, cols: cols)
+        for r in 0..<rows {
+            for c in 0..<cols {
+                randMat[r, c] = Double.random(in: range)
+            }
+        }
+        return randMat
+    }
+    
     func testExample() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
@@ -118,6 +128,53 @@ final class MatrixKitTests: XCTestCase {
         
         XCTAssertEqual(a * b, product)
         
+        // test that identity is truly an identity, and that the zero matrix truly does zero everything
+        for _ in 1...100 {
+            
+            // this loop takes a while
+            
+            let rows = Int.random(in: 10...100)
+            let cols = Int.random(in: 10...100)
+            let idenL = Matrix.identity(forDim: rows)
+            let idenR = Matrix.identity(forDim: cols)
+            let zeroL = Matrix(rows: Int.random(in: 10...100), cols: rows)
+            let zeroR = Matrix(rows: cols, cols: Int.random(in: 10...100))
+            let matrix = makeRandomMatrix(rows: rows, cols: cols)
+            
+            XCTAssertEqual(idenL * matrix, matrix)
+            XCTAssertEqual(matrix * idenR, matrix)
+            
+            XCTAssertEqual(zeroL * matrix, Matrix(rows: zeroL.rowCount, cols: matrix.colCount))
+            XCTAssertEqual(matrix * zeroR, Matrix(rows: matrix.rowCount, cols: zeroR.colCount))
+            
+        }
+        
+        // test vector dot product, essentially.
+        
+        for _ in 1...100 {
+            
+            let length = Int.random(in: 10...1000)
+            
+            let randomElementsA = [Double](repeating: 0, count: length).map { _ in Double.random(in: -1000...1000) }
+            let randomElementsB = [Double](repeating: 0, count: length).map { _ in Double.random(in: -1000...1000) }
+            
+            let ml = Matrix(randomElementsA)
+            let mr = Matrix(vector: randomElementsB)
+            
+            let dot = (ml * mr)[0, 0]
+            
+            var sum: Double = 0
+            
+            for i in 0..<length {
+                sum += randomElementsA[i] * randomElementsB[i]
+            }
+            
+            XCTAssertEqual(dot, sum)
+            
+        }
+        
+        // Test corner cases?
+        
     }
     
     func testRowReduction() {
@@ -147,8 +204,6 @@ final class MatrixKitTests: XCTestCase {
             [4, 2, 1]
         ]
         
-        print(matrixB.rowEchelonForm)
-        
         let rrefB: Matrix = [
             [1, 0, 0],
             [0, 1, 0],
@@ -165,6 +220,8 @@ final class MatrixKitTests: XCTestCase {
         XCTAssertEqual(matrixB.reducedRowEchelonForm, rrefB)
         
         XCTAssertTrue(matrixB.reducedRowEchelonForm.isReducedRowEchelonForm)
+        
+        
         
     }
     
