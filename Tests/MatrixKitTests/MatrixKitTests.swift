@@ -5,6 +5,8 @@ import Accelerate
 
 final class MatrixKitTests: XCTestCase {
     
+    let floatingPointAccuracy: Double = 0.0000001
+    
     public static func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
         var randMat = Matrix(rows: rows, cols: cols)
         for r in 0..<rows {
@@ -170,7 +172,8 @@ final class MatrixKitTests: XCTestCase {
                 sum += randomElementsA[i] * randomElementsB[i]
             }
             
-            XCTAssertEqual(dot, sum)
+            // this fails, but only is off by negligible amounts where the values disagree on precision.
+            XCTAssertEqual(dot, sum, accuracy: floatingPointAccuracy)
             
         }
         

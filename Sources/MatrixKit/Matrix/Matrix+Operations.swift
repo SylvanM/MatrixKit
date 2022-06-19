@@ -127,24 +127,14 @@ public extension Matrix {
      * - Returns: The matrix product `lhs * self`
      */
     func leftMultiply(by lhs: Matrix) -> Matrix {
+        let product = Matrix(rows: lhs.rowCount, cols: self.colCount)
         
-        // this is LUDICROUSLY slow and is ONLY temporary
-        
-        var product = Matrix(rows: lhs.rowCount, cols: self.colCount)
-        
-        for i in 0..<product.rowCount {
-            for j in 0..<product.colCount {
-                
-                var sum: Double = 0
-                
-                for k in 0..<lhs.colCount {
-                    sum += lhs[i, k] * self[k, j]
-                }
-                
-                product[i, j] = sum
-                
-            }
-        }
+        vDSP_mmulD(
+            lhs.mutableBufferPointer.baseAddress!,      1,
+            self.mutableBufferPointer.baseAddress!,     1,
+            product.mutableBufferPointer.baseAddress!,  1,
+            UInt(lhs.rowCount), UInt(self.colCount), UInt(lhs.colCount)
+        )
         
         return product
     }
@@ -160,7 +150,16 @@ public extension Matrix {
      * - Returns: The matrix product `self * rhs`
      */
     func rightMultiply(onto rhs: Matrix) -> Matrix {
-        rhs.leftMultiply(by: self)
+        let product = Matrix(rows: self.rowCount, cols: rhs.colCount)
+        
+        vDSP_mmulD(
+            self.mutableBufferPointer.baseAddress!,     1,
+            rhs.mutableBufferPointer.baseAddress!,      1,
+            product.mutableBufferPointer.baseAddress!,  1,
+            UInt(self.rowCount), UInt(rhs.colCount), UInt(self.colCount)
+        )
+        
+        return product
     }
     
     // MARK: - Row Operations and Guassian Elimination
@@ -175,25 +174,28 @@ public extension Matrix {
     mutating func apply(rowOperation: ElementaryOperation) {
         
         switch rowOperation {
-        case .scale(let row, let scalar_c):
+        case .scale(let row, var scalar):
             
-            for i in 0..<colCount {
-                self[row, i] *= scalar_c
-            }
+            let rowPtr = mutableBufferPointer.baseAddress!.advanced(by: row * colCount)
+            
+            vDSP_vsmulD(rowPtr, 1, &scalar, rowPtr, 1, UInt(colCount))
             
         case .swap(let rowA, let rowB):
             
-            let tempRow = self[rowA]
-            self[rowA] = self[rowB]
-            self[rowB] = tempRow
-
-        case .add(let scalar, let index, let toIndex):
+            let rowAPtr = mutableBufferPointer.baseAddress!.advanced(by: rowA * colCount)
+            let rowBPtr = mutableBufferPointer.baseAddress!.advanced(by: rowB * colCount)
             
-            for i in 0..<colCount {
-                self[toIndex, i] += scalar * self[index, i]
-            }
+            vDSP_vswapD(rowAPtr, 1, rowBPtr, 1, UInt(colCount))
+
+        case .add(var scalar, let row, let toRow):
+            
+            let rowPtr   = mutableBufferPointer.baseAddress!.advanced(by: row * colCount)
+            let toRowPtr = mutableBufferPointer.baseAddress!.advanced(by: toRow * colCount)
+            
+            vDSP_vsmaD(rowPtr, 1, &scalar, toRowPtr, 1, toRowPtr, 1, UInt(colCount))
             
         }
+        
     }
     
     /**
@@ -206,24 +208,25 @@ public extension Matrix {
     mutating func apply(columnOperation: ElementaryOperation) {
         
         switch columnOperation {
+        case .scale(let col, var scalar):
             
-        case .scale(let col, let scalar):
+            let colPtr = mutableBufferPointer.baseAddress!.advanced(by: col * rowCount)
             
-            for i in 0..<rowCount {
-                self[i, col] *= scalar
-            }
+            vDSP_vsmulD(colPtr, colCount, &scalar, colPtr, 1, UInt(rowCount))
             
         case .swap(let colA, let colB):
             
-            let tempCol = self[col: colA]
-            self[col: colA] = self[col: colB]
-            self[col: colB] = tempCol
+            let colAPtr = mutableBufferPointer.baseAddress!.advanced(by: colA * rowCount)
+            let colBPtr = mutableBufferPointer.baseAddress!.advanced(by: colB * rowCount)
             
-        case .add(let scalar, let index, let toIndex):
+            vDSP_vswapD(colAPtr, colCount, colBPtr, colCount, UInt(rowCount))
+
+        case .add(var scalar, let col, let toCol):
             
-            for i in 0..<rowCount {
-                self[i, toIndex] += scalar * self[i, index]
-            }
+            let colPtr   = mutableBufferPointer.baseAddress!.advanced(by: col * rowCount)
+            let toColPtr = mutableBufferPointer.baseAddress!.advanced(by: toCol * rowCount)
+            
+            vDSP_vsmaD(colPtr, colCount, &scalar, toColPtr, colCount, toColPtr, colCount, UInt(rowCount))
             
         }
         

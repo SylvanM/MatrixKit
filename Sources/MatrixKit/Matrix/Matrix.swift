@@ -29,9 +29,9 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     internal var flatmap: [Element]
     
     /**
-     * The buffer pointer to the flat map of elements
+     * The mutable buffer pointer to the flat map of elements
      */
-    internal lazy var bufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
+    internal var mutableBufferPointer: UnsafeMutableBufferPointer<Double>
     
     // MARK: Public Properties
     
@@ -58,6 +58,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         flatmap = Array(array.joined())
         colCount = array.first!.count
         rowCount = flatmap.count / colCount
+        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
     }
 
     /**
@@ -67,6 +68,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         flatmap = [Element](repeating: 0, count: rows * cols)
         rowCount = rows
         colCount = cols
+        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
     }
     
     public init(arrayLiteral elements: [Element]...) {
@@ -87,6 +89,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = other.flatmap
         self.rowCount = other.rowCount
         self.colCount = other.colCount
+        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
     }
     
     /**
@@ -96,6 +99,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = row
         self.rowCount = 1
         self.colCount = row.count
+        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
     }
     
     /**
@@ -105,6 +109,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = vector
         self.rowCount = vector.count
         self.colCount = 1
+        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
     }
     
     /**
@@ -132,6 +137,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = flatmap
         self.colCount = cols
         self.rowCount = flatmap.count / cols
+        mutableBufferPointer = self.flatmap.withUnsafeMutableBufferPointer { $0 }
     }
     
     // MARK: Static Producers
