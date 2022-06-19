@@ -5,7 +5,7 @@ import Accelerate
 
 final class MatrixKitTests: XCTestCase {
     
-    func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
+    public static func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
         var randMat = Matrix(rows: rows, cols: cols)
         for r in 0..<rows {
             for c in 0..<cols {
@@ -140,7 +140,7 @@ final class MatrixKitTests: XCTestCase {
             let idenR = Matrix.identity(forDim: cols)
             let zeroL = Matrix(rows: Int.random(in: 10...100), cols: rows)
             let zeroR = Matrix(rows: cols, cols: Int.random(in: 10...100))
-            let matrix = makeRandomMatrix(rows: rows, cols: cols)
+            let matrix = MatrixKitTests.makeRandomMatrix(rows: rows, cols: cols)
             
             XCTAssertEqual(idenL * matrix, matrix)
             XCTAssertEqual(matrix * idenR, matrix)
@@ -216,8 +216,8 @@ final class MatrixKitTests: XCTestCase {
         // test a little theorem
         
         for _ in 1...100 {
-            let a = makeRandomMatrix(rows: Int.random(in: 1...5), cols: Int.random(in: 1...5))
-            let b = makeRandomMatrix(rows: a.rowCount, cols: a.colCount)
+            let a = MatrixKitTests.makeRandomMatrix(rows: Int.random(in: 1...5), cols: Int.random(in: 1...5))
+            let b = MatrixKitTests.makeRandomMatrix(rows: a.rowCount, cols: a.colCount)
             
             XCTAssertLessThanOrEqual((a + b).rank, a.rank + b.rank)
             
@@ -260,14 +260,6 @@ final class MatrixKitTests: XCTestCase {
             [0, 0, 0]
         ]
         
-        let matrixC: Matrix = [
-            [1, 5, 10],
-            [2, 11, 22],
-            [8, 6, 12],
-            [0, 88, 176],
-            [4, 2, 4]
-        ]
-        
         XCTAssertFalse(matrixB.isRowEchelonForm)
         XCTAssertFalse(matrixB.isReducedRowEchelonForm)
         
@@ -283,7 +275,7 @@ final class MatrixKitTests: XCTestCase {
             let size = Int.random(in: 1...10)
             
             repeat {
-                matrix = makeRandomMatrix(rows: size, cols: size)
+                matrix = MatrixKitTests.makeRandomMatrix(rows: size, cols: size)
             } while !matrix.isInvertible
             
             // These fail due to imprecision of floating point.
