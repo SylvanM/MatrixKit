@@ -1,10 +1,11 @@
 import XCTest
-@testable import MatrixKit
+//@testable import MatrixKit
+import MatrixKit
 import Accelerate
 
 final class MatrixKitTests: XCTestCase {
     
-    func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = -1000...1000) -> Matrix {
+    func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
         var randMat = Matrix(rows: rows, cols: cols)
         for r in 0..<rows {
             for c in 0..<cols {
@@ -215,10 +216,11 @@ final class MatrixKitTests: XCTestCase {
         // test a little theorem
         
         for _ in 1...100 {
-            let a = makeRandomMatrix(rows: Int.random(in: 10...100), cols: Int.random(in: 10...100))
-            let b = makeRandomMatrix(rows: a.colCount, cols: Int.random(in: 10...100))
+            let a = makeRandomMatrix(rows: Int.random(in: 1...5), cols: Int.random(in: 1...5))
+            let b = makeRandomMatrix(rows: a.rowCount, cols: a.colCount)
             
-            XCTAssertTrue((a * b).rank <= a.rank)
+            XCTAssertLessThanOrEqual((a + b).rank, a.rank + b.rank)
+            
         }
         
     }
@@ -236,7 +238,7 @@ final class MatrixKitTests: XCTestCase {
             [0, 0, 1, 0, 1],
             [0, 0, 0, 1, 0]
         ]
-        
+    
         XCTAssertFalse(echelonFormA.isReducedRowEchelonForm)
         XCTAssertTrue(echelonFormA.isRowEchelonForm)
         XCTAssertEqual(echelonFormA.rowEchelonForm, echelonFormA)
@@ -258,6 +260,14 @@ final class MatrixKitTests: XCTestCase {
             [0, 0, 0]
         ]
         
+        let matrixC: Matrix = [
+            [1, 5, 10],
+            [2, 11, 22],
+            [8, 6, 12],
+            [0, 88, 176],
+            [4, 2, 4]
+        ]
+        
         XCTAssertFalse(matrixB.isRowEchelonForm)
         XCTAssertFalse(matrixB.isReducedRowEchelonForm)
         
@@ -267,8 +277,22 @@ final class MatrixKitTests: XCTestCase {
         
         XCTAssertTrue(matrixB.reducedRowEchelonForm.isReducedRowEchelonForm)
         
-        
-        
+        // Make sure that multiplying by the inverse gives an identity element
+        for _ in 1...100 {
+            var matrix: Matrix
+            let size = Int.random(in: 1...10)
+            
+            repeat {
+                matrix = makeRandomMatrix(rows: size, cols: size)
+            } while !matrix.isInvertible
+            
+            // These fail due to imprecision of floating point.
+            // we ALMOST get the identity matrix, but its off by a negligible amount.
+            XCTAssertEqual(matrix.inverse * matrix, Matrix.identity(forDim: size))
+            XCTAssertEqual(matrix * matrix.inverse, Matrix.identity(forDim: size))
+                        
+        }
+    
     }
     
 }

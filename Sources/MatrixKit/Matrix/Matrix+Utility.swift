@@ -9,7 +9,54 @@ import Foundation
 
 public extension Matrix {
     
-    internal func makeStringDescription() -> String {
+    internal func makeLatexString() -> String {
+        
+        func makeRowString(_ vect: [Element]) -> String {
+            
+            let firstString = String(vect.first!)
+            
+            if vect.count == 1 {
+                return firstString
+            }
+            
+            return vect[1..<colCount].reduce(firstString) { partialResult, elem in
+                partialResult + " & " + String(elem)
+            }
+
+        }
+        
+        let colheader = "{" + ("c" * colCount) + "}"
+        
+        let beginBracket = "\\left["
+        let endBracket = "\\right["
+        
+        let beginning = beginBracket + "\\begin{array}" + colheader
+        let ending = "\\end{array}" + endBracket
+        
+        let rowStrings: String = {
+            let firstString = makeRowString(self[0])
+            
+            if rowCount == 1 {
+                return firstString
+            }
+            
+            return rows[1..<rowCount].reduce(firstString) { partalResult, row in
+                partalResult + "\\\\" + makeRowString(row)
+            }
+        }()
+        
+        return beginning + rowStrings + ending
+    }
+    
+    internal func makeRawString() -> String {
+        rows.reduce("") { partialResult, row in
+            partialResult + row.reduce("", { partialResult, elem in
+                partialResult + String(elem) + " "
+            }) + "\n"
+        }
+    }
+    
+    internal func makePrettyString() -> String {
         
         let stringNumbers = rows.map { $0.map { $0.description } }
         

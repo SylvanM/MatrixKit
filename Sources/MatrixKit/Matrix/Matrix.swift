@@ -136,7 +136,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     
     // MARK: Static Producers
     
-    static func identity(forDim dim: Int) -> Matrix {
+    public static func identity(forDim dim: Int) -> Matrix {
         var iden = Matrix(rows: dim, cols: dim)
         for i in 0..<dim {
             iden[i, i] = 1
@@ -154,7 +154,21 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     }
     
     public var description: String {
-        makeStringDescription()
+        makePrettyString()
+    }
+    
+    /**
+     * The LaTeX code that will display this matrix
+     */
+    public var latexString: String {
+        makeLatexString()
+    }
+    
+    /**
+     * A raw string representing the matrix, delimited only by spaces and newlines
+     */
+    public var rawString: String {
+        makeRawString()
     }
     
     /**
