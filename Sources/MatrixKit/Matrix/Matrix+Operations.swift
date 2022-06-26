@@ -98,6 +98,30 @@ public extension Matrix {
     }
     
     /**
+     * Computes the distance squared between two matrices as if their flat maps were vectors
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     * - Parameter other: A matrix to compute the distance squared from
+     * - Returns: A nonnegative number representing how far off these matrices are from each other, squared
+     */
+    func distanceSquared(from other: Matrix) -> Element {
+        var ds: Double = 0
+        vDSP_distancesqD(baseAddress, 1, other.baseAddress, 1, &ds, UInt(count))
+        return ds
+    }
+    
+    /**
+     * Computes the distance between two matrices as if their flat maps were vectors
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     * - Parameter other: A matrix to compute the distance from
+     * - Returns: A nonnegative number representing how far off these matrices are from each other
+     */
+    func distance(from other: Matrix) -> Element {
+        sqrt(distanceSquared(from: other))
+    }
+    
+    /**
      * Multiplies this matrix by another matrix on the left.
      *
      * This performs the matrix multiplication `lhs * self`.

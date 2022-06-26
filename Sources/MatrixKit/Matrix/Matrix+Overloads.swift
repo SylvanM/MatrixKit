@@ -11,11 +11,7 @@ infix operator ~ : ComparisonPrecedence
 
 public extension Matrix {
     
-    // MARK: Assignment Operator
-    
-    static func = (lhs: inout Matrix, rhs: Matrix) {
-        
-    }
+
     
     // MARK: Comparison Operators
     
