@@ -31,12 +31,30 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * The mutable buffer pointer to the flat map of elements
      */
-    internal let mutableBufferPointer: UnsafeMutableBufferPointer<Double>
+    internal var immutableBufferPointer: UnsafeBufferPointer<Double> {
+        flatmap.withUnsafeBufferPointer { $0 }
+    }
     
     /**
      * The pointer to the base address of the flatmap array
      */
-    internal let baseAddress: UnsafeMutablePointer<Double>
+    internal var immutableBaseAddress: UnsafePointer<Double> {
+        immutableBufferPointer.baseAddress!
+    }
+    
+    /**
+     * The immutable buffer pointer to the flat map of elements
+     */
+    internal var mutableBufferPointer: UnsafeMutableBufferPointer<Double> {
+        UnsafeMutableBufferPointer(mutating: immutableBufferPointer)
+    }
+    
+    /**
+     * The mutable buffer pointer to the base address of the flatmap array
+     */
+    internal var mutableBaseAddress: UnsafeMutablePointer<Double> {
+        UnsafeMutablePointer(mutating: immutableBaseAddress)
+    }
     
     // MARK: Public Properties
     
@@ -63,8 +81,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         flatmap = Array(array.joined())
         colCount = array.first!.count
         rowCount = flatmap.count / colCount
-        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
-        baseAddress = mutableBufferPointer.baseAddress!
     }
 
     /**
@@ -74,8 +90,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         flatmap = [Element](repeating: 0, count: rows * cols)
         rowCount = rows
         colCount = cols
-        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
-        baseAddress = mutableBufferPointer.baseAddress!
     }
     
     public init(arrayLiteral elements: [Element]...) {
@@ -96,8 +110,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = other.flatmap
         self.rowCount = other.rowCount
         self.colCount = other.colCount
-        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
-        baseAddress = mutableBufferPointer.baseAddress!
     }
     
     /**
@@ -107,8 +119,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = row
         self.rowCount = 1
         self.colCount = row.count
-        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
-        baseAddress = mutableBufferPointer.baseAddress!
     }
     
     /**
@@ -118,8 +128,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = vector
         self.rowCount = vector.count
         self.colCount = 1
-        mutableBufferPointer = flatmap.withUnsafeMutableBufferPointer { $0 }
-        baseAddress = mutableBufferPointer.baseAddress!
     }
     
     /**
@@ -147,8 +155,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.flatmap = flatmap
         self.colCount = cols
         self.rowCount = flatmap.count / cols
-        mutableBufferPointer = self.flatmap.withUnsafeMutableBufferPointer { $0 }
-        baseAddress = mutableBufferPointer.baseAddress!
     }
     
     // MARK: Static Producers

@@ -1,5 +1,5 @@
 import XCTest
-//@testable import MatrixKit
+@testable import MatrixKit
 import MatrixKit
 import Accelerate
 
@@ -23,7 +23,60 @@ final class MatrixKitTests: XCTestCase {
         // results.
     }
     
+    func testSwift() {
+        print("Now testing some other stuff")
+        
+        struct Te {
+            var arr: [Double]
+            var ptr: UnsafeMutablePointer<Double> {
+                let unmut = arr.withUnsafeBufferPointer { $0 }.baseAddress!
+                return UnsafeMutablePointer(mutating: unmut)
+            }
+        }
+        
+        let a = Te(arr: [0, 1, 2])
+        var b = a
+        
+        print(a.ptr)
+        print(b.ptr)
+        
+        b.arr[0] = -1
+        
+        print(a.ptr)
+        print(b.ptr)
+        
+    }
+    
     // MARK: Initializer Tests
+    
+    func testCopy() {
+        let a: Matrix = [
+            [0, 2, 3, 5],
+            [1, 1, 6, 7],
+            [0, 0, 0, 2]
+        ]
+        
+        let b = a.applying(rowOperation: .scale(index: 0, by: 2))
+        
+        print(a)
+        print(b)
+        
+        var c = a
+        
+        c.flatmap[0] = -1
+        
+        print(c)
+        print(a)
+        
+        XCTAssertEqual(a, [
+            [0, 2, 3, 5],
+            [1, 1, 6, 7],
+            [0, 0, 0, 2]
+        ])
+        
+        
+        
+    }
     
     func testSubscriptAndInitializerTest() {
         
@@ -281,10 +334,9 @@ final class MatrixKitTests: XCTestCase {
                 matrix = MatrixKitTests.makeRandomMatrix(rows: size, cols: size)
             } while !matrix.isInvertible
             
-            // These fail due to imprecision of floating point.
-            // we ALMOST get the identity matrix, but its off by a negligible amount.
-            XCTAssertEqual(matrix.inverse * matrix, Matrix.identity(forDim: size))
-            XCTAssertEqual(matrix * matrix.inverse, Matrix.identity(forDim: size))
+            XCTAssertLessThan(Matrix.identity(forDim: size).distanceSquared(from: matrix.inverse * matrix), floatingPointAccuracy)
+            XCTAssertLessThan(Matrix.identity(forDim: size).distanceSquared(from: matrix * matrix.inverse), floatingPointAccuracy)
+            
                         
         }
     
