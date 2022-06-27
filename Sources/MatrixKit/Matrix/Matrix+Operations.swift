@@ -36,9 +36,14 @@ public extension Matrix {
     mutating func scale(by scalar: Double) {
         var scalar_p = scalar
         
-        withMutableBaseAddress { mutableBaseAddress in
-            vDSP_vsmulD(mutableBaseAddress, 1, &scalar_p, mutableBaseAddress, 1, UInt(flatmap.count))
+        var copy = flatmap
+        
+        withBaseAddress { basePtr in
+            vDSP_vsmulD(basePtr, 1, &scalar_p, &copy, 1, UInt(flatmap.count))
         }
+        
+        self.flatmap = copy
+        
     }
     
     /**
@@ -68,11 +73,15 @@ public extension Matrix {
      * - Parameter other: `Matrix` to add.
      */
     mutating func add(_ other: Matrix) {
-        other.withBaseAddress { otherBaseAddress in
-            withMutableBaseAddress { mutableBaseAddress in
-                vDSP_vaddD(mutableBaseAddress, 1, otherBaseAddress, 1, mutableBaseAddress, 1, UInt(flatmap.count))
+        var copy = flatmap
+        
+        other.withBaseAddress { otherPtr in
+            withBaseAddress { basePtr in
+                vDSP_vaddD(basePtr, 1, otherPtr, 1, &copy, 1, UInt(flatmap.count))
             }
         }
+        
+        flatmap = copy
     }
     
     /**
@@ -82,11 +91,15 @@ public extension Matrix {
      * - Parameter other: `Matrix` to subtract.
      */
     mutating func subtract(_ other: Matrix) {
-        other.withBaseAddress { otherBaseAddress in
-            withMutableBaseAddress { mutableBaseAddress in
-                vDSP_vsubD(mutableBaseAddress, 1, otherBaseAddress, 1, mutableBaseAddress, 1, UInt(flatmap.count))
+        var copy = flatmap
+        
+        other.withBaseAddress { otherPtr in
+            withBaseAddress { basePtr in
+                vDSP_vsubD(basePtr, 1, otherPtr, 1, &copy, 1, UInt(flatmap.count))
             }
         }
+        
+        flatmap = copy
     }
     
     /**
@@ -231,13 +244,15 @@ public extension Matrix {
      * - Parameter rowOperation: `ElementaryOperation` to perform as a row operation
      */
     mutating func apply(rowOperation: ElementaryOperation) {
-        withMutableBaseAddress { basePtr in
+        var copy = self
+        copy.withMutableBaseAddress { basePtr in
             switch rowOperation {
                 case .scale(let row, let scalar):           scale(row: row, by: scalar, basePtr: basePtr)
                 case .swap(let rowA, let rowB):             swap(row: rowA, with: rowB, basePtr: basePtr)
                 case .add(let scalar, let row, let toRow):  add(row: row, scaledBy: scalar, toRow: toRow, basePtr: basePtr)
             }
         }
+        self.flatmap = copy.flatmap
     }
     
     fileprivate func scale(row: Int, by scalar: Element, basePtr: UnsafeMutablePointer<Double>) {
@@ -270,15 +285,15 @@ public extension Matrix {
      * - Parameter columnOperation: `ElementaryOperation` to perform as a column operation
      */
     mutating func apply(columnOperation: ElementaryOperation) {
-        
-        withMutableBaseAddress { basePtr in
+        var copy = self
+        copy.withMutableBaseAddress { basePtr in
             switch columnOperation {
                 case .scale(let col, var scalar): scale(col: col, by: &scalar, basePtr: basePtr)
                 case .swap(let colA, let colB): swap(col: colA, with: colB, basePtr: basePtr)
                 case .add(var scalar, let col, let toCol): add(col: col, scaledBy: &scalar, toCol: toCol, basePtr: basePtr)
             }
         }
-        
+        self.flatmap = copy.flatmap
     }
     
     fileprivate func scale(col: Int, by scalar: inout Element, basePtr: UnsafeMutablePointer<Double>) {

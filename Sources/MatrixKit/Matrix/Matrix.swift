@@ -249,8 +249,8 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     }
     
     internal mutating func withMutableBaseAddress(_ closure: (UnsafeMutablePointer<Double>) -> ()) {
-        flatmap.withUnsafeMutableBufferPointer { buffPtr in
-            closure(buffPtr.baseAddress!)
+        flatmap.withUnsafeMutableBufferPointer { muttablePtr in
+            closure(muttablePtr.baseAddress!)
         }
     }
     
