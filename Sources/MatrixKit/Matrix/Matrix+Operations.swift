@@ -244,37 +244,51 @@ public extension Matrix {
      * - Parameter rowOperation: `ElementaryOperation` to perform as a row operation
      */
     mutating func apply(rowOperation: ElementaryOperation) {
+        switch rowOperation {
+            case .scale(let row, let scalar):           scale(row: row, by: scalar)
+            case .swap(let rowA, let rowB):             swap(row: rowA, with: rowB)
+            case .add(let scalar, let row, let toRow):  add(row: row, scaledBy: scalar, toRow: toRow)
+        }
+    }
+    
+    fileprivate mutating func scale(row: Int, by scalar: Element) {
+        var copy = flatmap
+        var scalar_p = scalar
+        
+        copy.withUnsafeMutableBufferPointer { bufferPtr in
+            
+            let basePtr = bufferPtr.baseAddress!.advanced(by: row * colCount)
+            
+            vDSP_vsmulD(
+                basePtr, 1, &scalar_p,
+                basePtr, 1, UInt(colCount)
+            )
+        }
+        
+        self.flatmap = copy
+    }
+    
+    fileprivate mutating func swap(row rowA: Int, with rowB: Int) {
         var copy = self
-        copy.withMutableBaseAddress { basePtr in
-            switch rowOperation {
-                case .scale(let row, let scalar):           scale(row: row, by: scalar, basePtr: basePtr)
-                case .swap(let rowA, let rowB):             swap(row: rowA, with: rowB, basePtr: basePtr)
-                case .add(let scalar, let row, let toRow):  add(row: row, scaledBy: scalar, toRow: toRow, basePtr: basePtr)
-            }
+        copy.withMutableBaseAddress { mutablePtr in
+            let rowAPtr = mutablePtr.advanced(by: rowA * colCount)
+            let rowBPtr = mutablePtr.advanced(by: rowB * colCount)
+            
+            vDSP_vswapD(rowAPtr, 1, rowBPtr, 1, UInt(colCount))
         }
         self.flatmap = copy.flatmap
     }
     
-    fileprivate func scale(row: Int, by scalar: Element, basePtr: UnsafeMutablePointer<Double>) {
-        let rowPtr = basePtr.advanced(by: row * colCount)
-        var scalar_p = scalar
-        
-        vDSP_vsmulD(rowPtr, 1, &scalar_p, rowPtr, 1, UInt(colCount))
-    }
-    
-    fileprivate func swap(row rowA: Int, with rowB: Int, basePtr: UnsafeMutablePointer<Double>) {
-        let rowAPtr = basePtr.advanced(by: rowA * colCount)
-        let rowBPtr = basePtr.advanced(by: rowB * colCount)
-        
-        vDSP_vswapD(rowAPtr, 1, rowBPtr, 1, UInt(colCount))
-    }
-    
-    fileprivate func add(row: Int, scaledBy scalar: Element, toRow dest: Int, basePtr: UnsafeMutablePointer<Double>) {
-        let rowPtr   = basePtr.advanced(by: row * colCount)
-        let toRowPtr = basePtr.advanced(by: dest * colCount)
-        var scalar_p = scalar
-        
-        vDSP_vsmaD(rowPtr, 1, &scalar_p, toRowPtr, 1, toRowPtr, 1, UInt(colCount))
+    fileprivate mutating func add(row: Int, scaledBy scalar: Element, toRow dest: Int) {
+        var copy = self
+        copy.withMutableBaseAddress { mutablePtr in
+            let rowPtr   = mutablePtr.advanced(by: row * colCount)
+            let toRowPtr = mutablePtr.advanced(by: dest * colCount)
+            var scalar_p = scalar
+            
+            vDSP_vsmaD(rowPtr, 1, &scalar_p, toRowPtr, 1, toRowPtr, 1, UInt(colCount))
+        }
+        self.flatmap = copy.flatmap
     }
     
     /**

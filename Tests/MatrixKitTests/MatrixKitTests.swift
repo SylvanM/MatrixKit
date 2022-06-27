@@ -24,8 +24,6 @@ final class MatrixKitTests: XCTestCase {
     }
     
     func testSwift() {
-        print("Now testing some other stuff")
-        
         struct Te {
             var arr: [Double]
             var ptr: UnsafeMutablePointer<Double> {
@@ -37,13 +35,7 @@ final class MatrixKitTests: XCTestCase {
         let a = Te(arr: [0, 1, 2])
         var b = a
         
-        print(a.ptr)
-        print(b.ptr)
-        
         b.arr[0] = -1
-        
-        print(a.ptr)
-        print(b.ptr)
         
     }
     
@@ -58,23 +50,15 @@ final class MatrixKitTests: XCTestCase {
         
         let b = a.applying(rowOperation: .scale(index: 0, by: 2))
         
-        print(a)
-        print(b)
-        
         var c = a
         
         c.flatmap[0] = -1
-        
-        print(c)
-        print(a)
         
         XCTAssertEqual(a, [
             [0, 2, 3, 5],
             [1, 1, 6, 7],
             [0, 0, 0, 2]
         ])
-        
-        
         
     }
     

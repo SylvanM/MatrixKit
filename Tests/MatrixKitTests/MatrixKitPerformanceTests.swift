@@ -36,8 +36,8 @@ class MatrixKitPerformanceTests: XCTestCase {
     func testMultiplcationSpeed() {
         // generate random matrices and multiply them
         self.measure {
-            for r in 1...100 {
-                for c in 1...100 {
+            for r in 1...10 {
+                for c in 1...10 {
                     let matrixA = MatrixKitTests.makeRandomMatrix(rows: r, cols: c, range: -10...10)
                     let matrixB = MatrixKitTests.makeRandomMatrix(rows: matrixA.colCount, cols: Int.random(in: 1...1000))
                     _ = matrixA * matrixB
@@ -49,8 +49,8 @@ class MatrixKitPerformanceTests: XCTestCase {
     func testMatrixRowOpSpeed() {
         // generate random row operations and perform them on random matrices
         self.measure {
-            for r in 2...100 {
-                for c in 2...100 {
+            for r in 2...10 {
+                for c in 2...10 {
                     var matrix = MatrixKitTests.makeRandomMatrix(rows: r, cols: c, range: -10...10)
                     var op: Matrix.ElementaryOperation
                     
