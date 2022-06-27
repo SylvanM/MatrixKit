@@ -11,6 +11,8 @@ infix operator ~ : ComparisonPrecedence
 
 public extension Matrix {
     
+
+    
     // MARK: Comparison Operators
     
     static func == (lhs: Matrix, rhs: Matrix) -> Bool {

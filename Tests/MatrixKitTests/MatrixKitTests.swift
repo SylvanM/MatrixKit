@@ -1,10 +1,13 @@
 import XCTest
 @testable import MatrixKit
+import MatrixKit
 import Accelerate
 
 final class MatrixKitTests: XCTestCase {
     
-    func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = -1000...1000) -> Matrix {
+    let floatingPointAccuracy: Double = 0.0000001
+    
+    public static func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
         var randMat = Matrix(rows: rows, cols: cols)
         for r in 0..<rows {
             for c in 0..<cols {
@@ -20,7 +23,44 @@ final class MatrixKitTests: XCTestCase {
         // results.
     }
     
+    func testSwift() {
+        struct Te {
+            var arr: [Double]
+            var ptr: UnsafeMutablePointer<Double> {
+                let unmut = arr.withUnsafeBufferPointer { $0 }.baseAddress!
+                return UnsafeMutablePointer(mutating: unmut)
+            }
+        }
+        
+        let a = Te(arr: [0, 1, 2])
+        var b = a
+        
+        b.arr[0] = -1
+        
+    }
+    
     // MARK: Initializer Tests
+    
+    func testCopy() {
+        let a: Matrix = [
+            [0, 2, 3, 5],
+            [1, 1, 6, 7],
+            [0, 0, 0, 2]
+        ]
+        
+        let b = a.applying(rowOperation: .scale(index: 0, by: 2))
+        
+        var c = a
+        
+        c.flatmap[0] = -1
+        
+        XCTAssertEqual(a, [
+            [0, 2, 3, 5],
+            [1, 1, 6, 7],
+            [0, 0, 0, 2]
+        ])
+        
+    }
     
     func testSubscriptAndInitializerTest() {
         
@@ -139,7 +179,7 @@ final class MatrixKitTests: XCTestCase {
             let idenR = Matrix.identity(forDim: cols)
             let zeroL = Matrix(rows: Int.random(in: 10...100), cols: rows)
             let zeroR = Matrix(rows: cols, cols: Int.random(in: 10...100))
-            let matrix = makeRandomMatrix(rows: rows, cols: cols)
+            let matrix = MatrixKitTests.makeRandomMatrix(rows: rows, cols: cols)
             
             XCTAssertEqual(idenL * matrix, matrix)
             XCTAssertEqual(matrix * idenR, matrix)
@@ -169,11 +209,59 @@ final class MatrixKitTests: XCTestCase {
                 sum += randomElementsA[i] * randomElementsB[i]
             }
             
-            XCTAssertEqual(dot, sum)
+            // this fails, but only is off by negligible amounts where the values disagree on precision.
+            XCTAssertEqual(dot, sum, accuracy: floatingPointAccuracy)
             
         }
         
-        // Test corner cases?
+    }
+    
+    func testRankComputation() {
+        
+        // identity is full rank
+        for dim in 1...100 {
+            XCTAssertEqual(Matrix.identity(forDim: dim).rank, dim)
+        }
+        
+        // use some known-value tests that I got from https://www.cse.cuhk.edu.hk/~taoyf/course/1410/19-spr/ex/ex-matrix-rank-sol.pdf
+        
+        let m1: Matrix = [
+            [0, 16, 8, 4],
+            [2, 4, 8, 16],
+            [16, 8, 4, 2],
+            [4, 8, 16, 2]
+        ]
+        
+        XCTAssertEqual(m1.rank, 4)
+        
+        let m2: Matrix = [
+            [4, -6, 0],
+            [-6, 0, 1],
+            [0, 9, -1],
+            [0, 1, 4]
+        ]
+        
+        XCTAssertEqual(m2.rank, 3)
+        
+        let m3: Matrix = [
+            [3, 0, 1, 2],
+            [6, 1, 0, 0],
+            [12, 1, 2, 4],
+            [6, 0, 2, 4],
+            [9, 0, 1, 2]
+        ]
+        
+        XCTAssertEqual(m3.rank, 3)
+        
+        // test a little theorem
+        
+        for _ in 1...100 {
+            let a = MatrixKitTests.makeRandomMatrix(rows: Int.random(in: 1...5), cols: Int.random(in: 1...5))
+            let b = MatrixKitTests.makeRandomMatrix(rows: a.rowCount, cols: a.colCount)
+            
+            XCTAssertLessThanOrEqual((a + b).rank, a.rank + b.rank)
+            
+        }
         
     }
     
@@ -190,7 +278,7 @@ final class MatrixKitTests: XCTestCase {
             [0, 0, 1, 0, 1],
             [0, 0, 0, 1, 0]
         ]
-        
+    
         XCTAssertFalse(echelonFormA.isReducedRowEchelonForm)
         XCTAssertTrue(echelonFormA.isRowEchelonForm)
         XCTAssertEqual(echelonFormA.rowEchelonForm, echelonFormA)
@@ -221,8 +309,21 @@ final class MatrixKitTests: XCTestCase {
         
         XCTAssertTrue(matrixB.reducedRowEchelonForm.isReducedRowEchelonForm)
         
-        
-        
+        // Make sure that multiplying by the inverse gives an identity element
+        for _ in 1...100 {
+            var matrix: Matrix
+            let size = Int.random(in: 1...10)
+            
+            repeat {
+                matrix = MatrixKitTests.makeRandomMatrix(rows: size, cols: size)
+            } while !matrix.isInvertible
+            
+            XCTAssertLessThan(Matrix.identity(forDim: size).distanceSquared(from: matrix.inverse * matrix), floatingPointAccuracy)
+            XCTAssertLessThan(Matrix.identity(forDim: size).distanceSquared(from: matrix * matrix.inverse), floatingPointAccuracy)
+            
+                        
+        }
+    
     }
     
 }
