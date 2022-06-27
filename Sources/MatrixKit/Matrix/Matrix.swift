@@ -28,34 +28,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      */
     internal var flatmap: [Element]
     
-    /**
-     * The mutable buffer pointer to the flat map of elements
-     */
-    internal var immutableBufferPointer: UnsafeBufferPointer<Double> {
-        flatmap.withUnsafeBufferPointer { $0 }
-    }
-    
-    /**
-     * The pointer to the base address of the flatmap array
-     */
-    internal var immutableBaseAddress: UnsafePointer<Double> {
-        immutableBufferPointer.baseAddress!
-    }
-    
-    /**
-     * The immutable buffer pointer to the flat map of elements
-     */
-    internal var mutableBufferPointer: UnsafeMutableBufferPointer<Double> {
-        UnsafeMutableBufferPointer(mutating: immutableBufferPointer)
-    }
-    
-    /**
-     * The mutable buffer pointer to the base address of the flatmap array
-     */
-    internal var mutableBaseAddress: UnsafeMutablePointer<Double> {
-        UnsafeMutablePointer(mutating: immutableBaseAddress)
-    }
-    
     // MARK: Public Properties
     
     /**
@@ -265,6 +237,20 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
             for i in 0..<rowCount {
                 self[i, col] = newValue[i]
             }
+        }
+    }
+    
+    // MARK: Manipulation
+    
+    internal func withBaseAddress(_ closure: (UnsafePointer<Double>) -> ()) {
+        flatmap.withUnsafeBufferPointer { buffPtr in
+            closure(buffPtr.baseAddress!)
+        }
+    }
+    
+    internal mutating func withMutableBaseAddress(_ closure: (UnsafeMutablePointer<Double>) -> ()) {
+        flatmap.withUnsafeMutableBufferPointer { buffPtr in
+            closure(buffPtr.baseAddress!)
         }
     }
     

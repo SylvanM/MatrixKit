@@ -35,7 +35,10 @@ public extension Matrix {
      */
     mutating func scale(by scalar: Double) {
         var scalar_p = scalar
-        vDSP_vsmulD(mutableBaseAddress, 1, &scalar_p, mutableBaseAddress, 1, UInt(flatmap.count))
+        
+        withMutableBaseAddress { mutableBaseAddress in
+            vDSP_vsmulD(mutableBaseAddress, 1, &scalar_p, mutableBaseAddress, 1, UInt(flatmap.count))
+        }
     }
     
     /**
@@ -45,9 +48,16 @@ public extension Matrix {
      * - Returns: The result of scaling this matrix by a scalar.
      */
     func scaled(by scalar: Double) -> Matrix {
-        let out = self
+        var out = self
         var scalar_p = scalar
-        vDSP_vsmulD(mutableBaseAddress, 1, &scalar_p, out.mutableBaseAddress, 1, UInt(flatmap.count))
+        
+        out.withMutableBaseAddress { outMutableBaseAddress in
+            withBaseAddress { baseAddress in
+                vDSP_vsmulD(baseAddress, 1, &scalar_p, outMutableBaseAddress, 1, UInt(flatmap.count))
+            }
+            
+        }
+        
         return out
     }
     
@@ -58,7 +68,11 @@ public extension Matrix {
      * - Parameter other: `Matrix` to add.
      */
     mutating func add(_ other: Matrix) {
-        vDSP_vaddD(mutableBaseAddress, 1, other.mutableBaseAddress, 1, mutableBaseAddress, 1, UInt(flatmap.count))
+        other.withBaseAddress { otherBaseAddress in
+            withMutableBaseAddress { mutableBaseAddress in
+                vDSP_vaddD(mutableBaseAddress, 1, otherBaseAddress, 1, mutableBaseAddress, 1, UInt(flatmap.count))
+            }
+        }
     }
     
     /**
@@ -68,7 +82,11 @@ public extension Matrix {
      * - Parameter other: `Matrix` to subtract.
      */
     mutating func subtract(_ other: Matrix) {
-        vDSP_vsubD(mutableBaseAddress, 1, other.mutableBaseAddress, 1, mutableBaseAddress, 1, UInt(flatmap.count))
+        other.withBaseAddress { otherBaseAddress in
+            withMutableBaseAddress { mutableBaseAddress in
+                vDSP_vsubD(mutableBaseAddress, 1, otherBaseAddress, 1, mutableBaseAddress, 1, UInt(flatmap.count))
+            }
+        }
     }
     
     /**
@@ -79,8 +97,16 @@ public extension Matrix {
      * - Returns: The difference of this matrix and `other`.
      */
     func difference(subtracting other: Matrix) -> Matrix {
-        let out = self
-        vDSP_vsubD(mutableBaseAddress, 1, other.mutableBaseAddress, 1, out.mutableBaseAddress, 1, UInt(flatmap.count))
+        var out = self
+        
+        out.withMutableBaseAddress { outMutableBaseAddress in
+            other.withBaseAddress { otherBaseAddress in
+                withBaseAddress { baseAddress in
+                    vDSP_vsubD(baseAddress, 1, otherBaseAddress, 1, outMutableBaseAddress, 1, UInt(flatmap.count))
+                }
+            }
+        }
+        
         return out
     }
     
@@ -92,8 +118,16 @@ public extension Matrix {
      * - Returns: The sum of `self` and `other`.
      */
     func sum(adding other: Matrix) -> Matrix {
-        let out = self
-        vDSP_vaddD(mutableBaseAddress, 1, other.mutableBaseAddress, 1, out.mutableBaseAddress, 1, UInt(flatmap.count))
+        var out = self
+        
+        out.withMutableBaseAddress { outMutableBaseAddress in
+            other.withBaseAddress { otherBaseAddress in
+                withBaseAddress { baseAddress in
+                    vDSP_vaddD(baseAddress, 1, otherBaseAddress, 1, outMutableBaseAddress, 1, UInt(flatmap.count))
+                }
+            }
+        }
+        
         return out
     }
     
@@ -106,7 +140,13 @@ public extension Matrix {
      */
     func distanceSquared(from other: Matrix) -> Element {
         var ds: Double = 0
-        vDSP_distancesqD(mutableBaseAddress, 1, other.mutableBaseAddress, 1, &ds, UInt(count))
+        
+        other.withBaseAddress { otherBaseAddress in
+            withBaseAddress { baseAddress in
+                vDSP_distancesqD(baseAddress, 1, otherBaseAddress, 1, &ds, UInt(count))
+            }
+        }
+        
         return ds
     }
     
@@ -132,14 +172,20 @@ public extension Matrix {
      * - Returns: The matrix product `lhs * self`
      */
     func leftMultiply(by lhs: Matrix) -> Matrix {
-        let product = Matrix(rows: lhs.rowCount, cols: self.colCount)
+        var product = Matrix(rows: lhs.rowCount, cols: self.colCount)
         
-        vDSP_mmulD(
-            lhs.mutableBaseAddress,      1,
-            self.mutableBaseAddress,     1,
-            product.mutableBaseAddress,  1,
-            UInt(lhs.rowCount), UInt(self.colCount), UInt(lhs.colCount)
-        )
+        withBaseAddress { basePtr in
+            lhs.withBaseAddress { lhsPtr in
+                product.withMutableBaseAddress { productPtr in
+                    vDSP_mmulD(
+                        lhsPtr,     1,
+                        basePtr,    1,
+                        productPtr, 1,
+                        UInt(lhs.rowCount), UInt(self.colCount), UInt(lhs.colCount)
+                    )
+                }
+            }
+        }
         
         return product
     }
@@ -155,14 +201,22 @@ public extension Matrix {
      * - Returns: The matrix product `self * rhs`
      */
     func rightMultiply(onto rhs: Matrix) -> Matrix {
-        let product = Matrix(rows: self.rowCount, cols: rhs.colCount)
+        var product = Matrix(rows: self.rowCount, cols: rhs.colCount)
         
-        vDSP_mmulD(
-            self.mutableBaseAddress,     1,
-            rhs.mutableBaseAddress,      1,
-            product.mutableBaseAddress,  1,
-            UInt(self.rowCount), UInt(rhs.colCount), UInt(self.colCount)
-        )
+        withBaseAddress { basePtr in
+            rhs.withBaseAddress { rhsPtr in
+                product.withMutableBaseAddress { productPtr in
+                    vDSP_mmulD(
+                        basePtr,     1,
+                        rhsPtr,      1,
+                        productPtr,  1,
+                        UInt(self.rowCount), UInt(rhs.colCount), UInt(self.colCount)
+                    )
+                }
+            }
+        }
+        
+        
         
         return product
     }
@@ -177,30 +231,35 @@ public extension Matrix {
      * - Parameter rowOperation: `ElementaryOperation` to perform as a row operation
      */
     mutating func apply(rowOperation: ElementaryOperation) {
-        
-        switch rowOperation {
-        case .scale(let row, var scalar):
-            
-            let rowPtr = mutableBaseAddress.advanced(by: row * colCount)
-            
-            vDSP_vsmulD(rowPtr, 1, &scalar, rowPtr, 1, UInt(colCount))
-            
-        case .swap(let rowA, let rowB):
-            
-            let rowAPtr = mutableBaseAddress.advanced(by: rowA * colCount)
-            let rowBPtr = mutableBaseAddress.advanced(by: rowB * colCount)
-            
-            vDSP_vswapD(rowAPtr, 1, rowBPtr, 1, UInt(colCount))
-
-        case .add(var scalar, let row, let toRow):
-            
-            let rowPtr   = mutableBaseAddress.advanced(by: row * colCount)
-            let toRowPtr = mutableBaseAddress.advanced(by: toRow * colCount)
-            
-            vDSP_vsmaD(rowPtr, 1, &scalar, toRowPtr, 1, toRowPtr, 1, UInt(colCount))
-            
+        withMutableBaseAddress { basePtr in
+            switch rowOperation {
+                case .scale(let row, let scalar):           scale(row: row, by: scalar, basePtr: basePtr)
+                case .swap(let rowA, let rowB):             swap(row: rowA, with: rowB, basePtr: basePtr)
+                case .add(let scalar, let row, let toRow):  add(row: row, scaledBy: scalar, toRow: toRow, basePtr: basePtr)
+            }
         }
+    }
+    
+    fileprivate func scale(row: Int, by scalar: Element, basePtr: UnsafeMutablePointer<Double>) {
+        let rowPtr = basePtr.advanced(by: row * colCount)
+        var scalar_p = scalar
         
+        vDSP_vsmulD(rowPtr, 1, &scalar_p, rowPtr, 1, UInt(colCount))
+    }
+    
+    fileprivate func swap(row rowA: Int, with rowB: Int, basePtr: UnsafeMutablePointer<Double>) {
+        let rowAPtr = basePtr.advanced(by: rowA * colCount)
+        let rowBPtr = basePtr.advanced(by: rowB * colCount)
+        
+        vDSP_vswapD(rowAPtr, 1, rowBPtr, 1, UInt(colCount))
+    }
+    
+    fileprivate func add(row: Int, scaledBy scalar: Element, toRow dest: Int, basePtr: UnsafeMutablePointer<Double>) {
+        let rowPtr   = basePtr.advanced(by: row * colCount)
+        let toRowPtr = basePtr.advanced(by: dest * colCount)
+        var scalar_p = scalar
+        
+        vDSP_vsmaD(rowPtr, 1, &scalar_p, toRowPtr, 1, toRowPtr, 1, UInt(colCount))
     }
     
     /**
@@ -212,29 +271,31 @@ public extension Matrix {
      */
     mutating func apply(columnOperation: ElementaryOperation) {
         
-        switch columnOperation {
-        case .scale(let col, var scalar):
-            
-            let colPtr = mutableBaseAddress.advanced(by: col * rowCount)
-            
-            vDSP_vsmulD(colPtr, colCount, &scalar, colPtr, 1, UInt(rowCount))
-            
-        case .swap(let colA, let colB):
-            
-            let colAPtr = mutableBaseAddress.advanced(by: colA * rowCount)
-            let colBPtr = mutableBaseAddress.advanced(by: colB * rowCount)
-            
-            vDSP_vswapD(colAPtr, colCount, colBPtr, colCount, UInt(rowCount))
-
-        case .add(var scalar, let col, let toCol):
-            
-            let colPtr   = mutableBaseAddress.advanced(by: col * rowCount)
-            let toColPtr = mutableBaseAddress.advanced(by: toCol * rowCount)
-            
-            vDSP_vsmaD(colPtr, colCount, &scalar, toColPtr, colCount, toColPtr, colCount, UInt(rowCount))
-            
+        withMutableBaseAddress { basePtr in
+            switch columnOperation {
+                case .scale(let col, var scalar): scale(col: col, by: &scalar, basePtr: basePtr)
+                case .swap(let colA, let colB): swap(col: colA, with: colB, basePtr: basePtr)
+                case .add(var scalar, let col, let toCol): add(col: col, scaledBy: &scalar, toCol: toCol, basePtr: basePtr)
+            }
         }
         
+    }
+    
+    fileprivate func scale(col: Int, by scalar: inout Element, basePtr: UnsafeMutablePointer<Double>) {
+        let colPtr = basePtr.advanced(by: col * rowCount)
+        vDSP_vsmulD(colPtr, colCount, &scalar, colPtr, 1, UInt(rowCount))
+    }
+    
+    fileprivate func swap(col colA: Int, with colB: Int, basePtr: UnsafeMutablePointer<Double>) {
+        let colAPtr = basePtr.advanced(by: colA * rowCount)
+        let colBPtr = basePtr.advanced(by: colB * rowCount)
+        vDSP_vswapD(colAPtr, colCount, colBPtr, colCount, UInt(rowCount))
+    }
+    
+    fileprivate func add(col: Int, scaledBy scalar: inout Element, toCol dest: Int, basePtr: UnsafeMutablePointer<Double>) {
+        let colPtr   = basePtr.advanced(by: col * rowCount)
+        let toColPtr = basePtr.advanced(by: dest * rowCount)
+        vDSP_vsmaD(colPtr, colCount, &scalar, toColPtr, colCount, toColPtr, colCount, UInt(rowCount))
     }
     
     /**
