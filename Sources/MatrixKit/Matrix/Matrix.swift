@@ -184,7 +184,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * This matrix encoded as a `Data` object for use of reading and writing to files, or whatever is to be done!
      */
-    public var encodedData: Data {
+    var encodedData: Data {
         encode()
     }
     
