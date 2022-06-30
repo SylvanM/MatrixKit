@@ -39,20 +39,6 @@ public extension Matrix {
         return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
     }
     
-    /**
-     * Creates a random matrix
-     *
-     * - Parameter rows: The amount of rows in the random matrix
-     * - Parameter cols: The amount of columns in the random matrix
-     * - Parameter range: A range to guarantee all elements of the matrix are in. By default, this will generate numbers between 0 and 1, excluding 1.
-     *
-     * - Returns: A new, random matrix, with all elements in `range.`
-     */
-    static func random(rows: Int, cols: Int, range: Range<Element> = 0..<1) -> Matrix {
-        let randomFlatmap = [Element](repeating: 0, count: rows * cols).lazy.map { _ in Element.random(in: range) }
-        return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
-    }
-    
     // MARK: String Conversion
     
     internal func makeLatexString() -> String {
