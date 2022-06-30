@@ -39,6 +39,27 @@ public extension Matrix {
         return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
     }
     
+    /**
+     * Decodes a matrix from the base address of a buffer of data that encodes this matrix, and updates the base address to point to the next
+     * byte after this buffer
+     *
+     * - Parameter baseAddress: `UnsafeRawPointer` pointing to the beginning of a byte buffer that encodes a matrix, which
+     * will be incremented
+     */
+    static func read(from baseAddress: inout UnsafeRawPointer) -> Matrix {
+        let dimensionDecoder = baseAddress.bindMemory(to: Int.self, capacity: 1)
+        let rows = dimensionDecoder.pointee
+        let cols = dimensionDecoder.advanced(by: 1).pointee
+        
+        return dimensionDecoder.advanced(by: 2).withMemoryRebound(to: Element.self, capacity: rows * cols) { flatmapPointer -> Matrix in
+            let buffer = UnsafeBufferPointer(start: flatmapPointer, count: rows * cols)
+            let flatmap = Array(buffer)
+            
+            baseAddress = UnsafeRawPointer(flatmapPointer.advanced(by: rows * cols))
+            return Matrix(flatmap: flatmap, cols: cols)
+        }
+    }
+    
     // MARK: String Conversion
     
     internal func makeLatexString() -> String {

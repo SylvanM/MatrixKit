@@ -150,27 +150,9 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * Creates a matrix from a raw buffer
      */
     public init(buffer: UnsafeRawBufferPointer) {
-        let intSize = MemoryLayout<Int>.size
-        let doubleSize = MemoryLayout<Double>.size
-        
-        flatmap = []
-        rowCount = 0
-        colCount = 0
-        
-        // decode the dimensions
-        
-        let dimDecoder = buffer.bindMemory(to: Int.self)
-        rowCount = dimDecoder.baseAddress!.pointee
-        colCount = dimDecoder.baseAddress!.advanced(by: 1).pointee
-        
-        flatmap = [Element](repeating: 0, count: rowCount * colCount)
-        
-        let fillStart = buffer.baseAddress!.advanced(by: 2 * intSize)
-        let fillBuffer = UnsafeRawBufferPointer(start: fillStart, count: flatmap.count * doubleSize)
-        
-        _ = flatmap.withUnsafeMutableBytes { ftmpPtr in
-            fillBuffer.copyBytes(to: ftmpPtr)
-        }
+        var baseAddress = buffer.baseAddress!
+        let decoded = Matrix.read(from: &baseAddress)
+        self.init(decoded)
     }
     
     // MARK: Static Producers
