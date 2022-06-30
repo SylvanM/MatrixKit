@@ -8,19 +8,15 @@ final class MatrixKitTests: XCTestCase {
     let floatingPointAccuracy: Double = 0.0000001
     
     public static func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
-        var randMat = Matrix(rows: rows, cols: cols)
-        for r in 0..<rows {
-            for c in 0..<cols {
-                randMat[r, c] = Double.random(in: range)
-            }
-        }
-        return randMat
+        let flatmap = [Double](repeating: 0, count: rows * cols).lazy.map { _ in Double.random(in: range) }
+        return Matrix(flatmap: [Double](flatmap), cols: cols)
     }
     
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
+    func testReadWrite() throws {
+        for _ in 1...100 {
+            let matrix = MatrixKitTests.makeRandomMatrix(rows: Int.random(in: 1...100), cols: Int.random(in: 1...100))
+            XCTAssertEqual(matrix, Matrix(matrix.encodedData))
+        }
     }
     
     func testSwift() {
@@ -123,6 +119,13 @@ final class MatrixKitTests: XCTestCase {
     }
     
     func testMatrixMath() {
+        
+        let onesH = Matrix([1, 1])
+        let onesV = Matrix(vector: [1, 1])
+        let ozV = Matrix(vector: [0, 1])
+        
+        XCTAssertEqual(onesH * onesV, [[2]])
+        XCTAssertEqual(onesH * ozV, [[1]])
         
         for dim in 1...10 {
             let scalar = Double.random(in: 0...10)

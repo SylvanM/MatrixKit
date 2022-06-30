@@ -33,14 +33,23 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * The amount of columns in this matrix
      */
-    public let colCount: Int
+    public fileprivate(set) var colCount: Int
     
     /**
      * The amount of rows in this matrix
      */
-    public let rowCount: Int
+    public fileprivate(set) var rowCount: Int
     
     // MARK: - Initializers
+    
+    /**
+     * Creates an empty matrix representing `[0]`
+     */
+    public init() {
+        self.flatmap = [0]
+        self.colCount = 1
+        self.rowCount = 1
+    }
 
     /**
      * Creates a matrix from an array of rows
@@ -129,6 +138,37 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.rowCount = flatmap.count / cols
     }
     
+    /**
+     * Creates a matrix from an encoded matrix `Data` object
+     */
+    init(_ data: Data) {
+        
+        let intSize = MemoryLayout<Int>.size
+        let doubleSize = MemoryLayout<Double>.size
+        
+        flatmap = []
+        rowCount = 0
+        colCount = 0
+        
+        // decode the dimensions
+        
+        data.withUnsafeBytes { dataPtr in
+            
+            let dimDecoder = dataPtr.bindMemory(to: Int.self)
+            rowCount = dimDecoder.baseAddress!.pointee
+            colCount = dimDecoder.baseAddress!.advanced(by: 1).pointee
+            
+            flatmap = [Element](repeating: 0, count: rowCount * colCount)
+            
+            let fillStart = dataPtr.baseAddress!.advanced(by: 2 * intSize)
+            let fillBuffer = UnsafeRawBufferPointer(start: fillStart, count: flatmap.count * doubleSize)
+            
+            _ = flatmap.withUnsafeMutableBytes { ftmpPtr in
+                fillBuffer.copyBytes(to: ftmpPtr)
+            }
+        }
+    }
+    
     // MARK: Static Producers
     
     public static func identity(forDim dim: Int) -> Matrix {
@@ -137,6 +177,48 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
             iden[i, i] = 1
         }
         return iden
+    }
+    
+    // MARK: Encoding/Decoding
+    
+    /**
+     * This matrix encoded as a `Data` object for use of reading and writing to files, or whatever is to be done!
+     */
+    var encodedData: Data {
+        encode()
+    }
+    
+    /**
+     * Encodes this matrix into a raw data object
+     */
+    fileprivate func encode() -> Data {
+        
+        let intSize = MemoryLayout<Int>.size
+        let doubleSize = MemoryLayout<Double>.size
+        
+        // compute number of bytes needed to encode this matrix
+        var size = intSize * 2 // encode the rows and columns
+        size += doubleSize * count // allocate space for each element
+        
+        let bytes = UnsafeMutableRawBufferPointer.allocate(byteCount: size, alignment: 1).bindMemory(to: UInt8.self)
+        
+        _ = [rowCount, colCount].withUnsafeBytes { ptr in
+            ptr.bindMemory(to: UInt8.self).copyBytes(to: bytes, count: 2 * intSize)
+        }
+        
+        let offset = 2 * intSize
+        let fillStart = bytes.baseAddress!.advanced(by: offset)
+        
+        let fillBuffer = UnsafeMutableRawBufferPointer(start: fillStart, count: size - offset)
+        
+        // now fill this buffer with data from the array
+        
+        _ = flatmap.withUnsafeBytes { ptr in
+            ptr.bindMemory(to: UInt8.self).copyBytes(to: fillBuffer)
+        }
+        
+        return Data(buffer: bytes)
+        
     }
     
     // MARK: Computed Properties

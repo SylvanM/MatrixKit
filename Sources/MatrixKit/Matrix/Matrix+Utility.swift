@@ -6,8 +6,24 @@
 //
 
 import Foundation
+import Security
 
 public extension Matrix {
+    
+    // MARK: Creation
+    
+    /**
+     * Creates a random matrix of specified dimension
+     */
+    internal static func random(rows: Int, cols: Int) -> Matrix {
+        var rand = Matrix(rows: rows, cols: cols)
+        rand.withMutableBaseAddress { basePtr in
+            _ = SecRandomCopyBytes(kSecRandomDefault, MemoryLayout<Double>.size * (rows * cols), basePtr)
+        }
+        return rand
+    }
+    
+    // MARK: String Conversion
     
     internal func makeLatexString() -> String {
         
@@ -96,6 +112,8 @@ public extension Matrix {
         return string
     }
     
+    // MARK: Element Manipulation
+    
     /**
      * Applies a function to each element of this matrix, in place
      */
@@ -152,5 +170,7 @@ public extension Matrix {
         
         return Matrix(flatmap: newFlatmap, cols: colCount)
     }
+    
+    
     
 }
