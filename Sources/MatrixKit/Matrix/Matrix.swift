@@ -141,7 +141,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * Creates a matrix from an encoded matrix `Data` object
      */
-    init(_ data: Data) {
+    public init(_ data: Data) {
         
         let intSize = MemoryLayout<Int>.size
         let doubleSize = MemoryLayout<Double>.size
@@ -184,7 +184,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * This matrix encoded as a `Data` object for use of reading and writing to files, or whatever is to be done!
      */
-    var encodedData: Data {
+    public var encodedData: Data {
         encode()
     }
     

@@ -1,5 +1,5 @@
 import XCTest
-@testable import MatrixKit
+import MatrixKit
 import MatrixKit
 import Accelerate
 
@@ -36,27 +36,6 @@ final class MatrixKitTests: XCTestCase {
     }
     
     // MARK: Initializer Tests
-    
-    func testCopy() {
-        let a: Matrix = [
-            [0, 2, 3, 5],
-            [1, 1, 6, 7],
-            [0, 0, 0, 2]
-        ]
-        
-        let b = a.applying(rowOperation: .scale(index: 0, by: 2))
-        
-        var c = a
-        
-        c.flatmap[0] = -1
-        
-        XCTAssertEqual(a, [
-            [0, 2, 3, 5],
-            [1, 1, 6, 7],
-            [0, 0, 0, 2]
-        ])
-        
-    }
     
     func testSubscriptAndInitializerTest() {
         
