@@ -46,6 +46,21 @@ class MatrixKitPerformanceTests: XCTestCase {
         }
     }
     
+    func testBigComputations() {
+        let matrixA = MatrixKitTests.makeRandomMatrix(rows: 2000, cols: 100000)
+        let matrixB = MatrixKitTests.makeRandomMatrix(rows: 100000, cols: 2000)
+        
+        var product = Matrix()
+        
+        print("Starting computation...")
+        
+        measure {
+            product = matrixA * matrixB
+        }
+        
+        print(product)
+    }
+    
     func testMatrixRowOpSpeed() {
         // generate random row operations and perform them on random matrices
         self.measure {
