@@ -46,8 +46,8 @@ public extension Matrix {
      * - Parameter baseAddress: `UnsafeRawPointer` pointing to the beginning of a byte buffer that encodes a matrix, which
      * will be incremented
      */
-    static func read(from baseAddress: inout UnsafeRawPointer) -> Matrix {
-        let dimensionDecoder = baseAddress.bindMemory(to: Int.self, capacity: 1)
+    static func unsafeRead(from baseAddress: inout UnsafeRawPointer) -> Matrix {
+        let dimensionDecoder = baseAddress.bindMemory(to: Int.self, capacity: 2)
         let rows = dimensionDecoder.pointee
         let cols = dimensionDecoder.advanced(by: 1).pointee
         
@@ -57,6 +57,29 @@ public extension Matrix {
             
             baseAddress = UnsafeRawPointer(flatmapPointer.advanced(by: rows * cols))
             return Matrix(flatmap: flatmap, cols: cols)
+        }
+    }
+    
+    /**
+     * Writes all the necessary data of this matrix to a stream of bytes, given the base address
+     *
+     * - Precondition: The memory referenced is properly initialized
+     *
+     * - Parameter address: The base address to write data to, which is then set equal to the next base address after the matrix in memory
+     */
+    func unsafeWrite(to address: inout UnsafeMutableRawPointer) {
+        let dimensionEncoder = address.bindMemory(to: Int.self, capacity: 2)
+        dimensionEncoder.pointee = rowCount
+        dimensionEncoder.advanced(by: 1).pointee = colCount
+        
+        let flatmapWriteAddress = UnsafeMutableRawPointer(dimensionEncoder.advanced(by: 2))
+        
+        let bufferSize = MemoryLayout<Element>.size * flatmap.count
+        let writeBuffer = UnsafeMutableRawBufferPointer(start: flatmapWriteAddress, count: bufferSize)
+        
+        flatmap.withUnsafeBytes {
+            $0.copyBytes(to: writeBuffer)
+            address = writeBuffer.baseAddress!.advanced(by: bufferSize)
         }
     }
     
