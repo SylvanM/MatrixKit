@@ -13,14 +13,44 @@ public extension Matrix {
     // MARK: Creation
     
     /**
-     * Creates a random matrix of specified dimension
+     * Creates a random matrix of specified dimension, generating secure random bytes.
+     *
+     * - Warning: This does **not** guarantee that the elements willl be "friendly" `Double` bit patterns. Generating `nan` may occur.
      */
-    internal static func random(rows: Int, cols: Int) -> Matrix {
+    static func secureRandom(rows: Int, cols: Int) -> Matrix {
         var rand = Matrix(rows: rows, cols: cols)
         rand.withMutableBaseAddress { basePtr in
-            _ = SecRandomCopyBytes(kSecRandomDefault, MemoryLayout<Double>.size * (rows * cols), basePtr)
+            _ = SecRandomCopyBytes(kSecRandomDefault, MemoryLayout<Element>.size * (rows * cols), basePtr)
         }
         return rand
+    }
+    
+    /**
+     * Creates a random matrix
+     *
+     * - Parameter rows: The amount of rows in the random matrix
+     * - Parameter cols: The amount of columns in the random matrix
+     * - Parameter range: A closed range to guarantee all elements of the matrix are in. By default, this will generate numbers between 0 and 1.
+     *
+     * - Returns: A new, random matrix, with all elements in `range.`
+     */
+    static func random(rows: Int, cols: Int, range: ClosedRange<Element> = 0...1) -> Matrix {
+        let randomFlatmap = [Element](repeating: 0, count: rows * cols).lazy.map { _ in Element.random(in: range) }
+        return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
+    }
+    
+    /**
+     * Creates a random matrix
+     *
+     * - Parameter rows: The amount of rows in the random matrix
+     * - Parameter cols: The amount of columns in the random matrix
+     * - Parameter range: A range to guarantee all elements of the matrix are in. By default, this will generate numbers between 0 and 1, excluding 1.
+     *
+     * - Returns: A new, random matrix, with all elements in `range.`
+     */
+    static func random(rows: Int, cols: Int, range: Range<Element> = 0..<1) -> Matrix {
+        let randomFlatmap = [Element](repeating: 0, count: rows * cols).lazy.map { _ in Element.random(in: range) }
+        return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
     }
     
     // MARK: String Conversion
