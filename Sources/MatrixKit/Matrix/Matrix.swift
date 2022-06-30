@@ -141,8 +141,15 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * Creates a matrix from an encoded matrix `Data` object
      */
-    public init(_ data: Data) {
-        
+    public init(data: Data) {
+        let buffer = data.withUnsafeBytes { $0 }
+        self.init(buffer: buffer)
+    }
+    
+    /**
+     * Creates a matrix from a raw buffer
+     */
+    public init(buffer: UnsafeRawBufferPointer) {
         let intSize = MemoryLayout<Int>.size
         let doubleSize = MemoryLayout<Double>.size
         
@@ -152,20 +159,17 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         
         // decode the dimensions
         
-        data.withUnsafeBytes { dataPtr in
-            
-            let dimDecoder = dataPtr.bindMemory(to: Int.self)
-            rowCount = dimDecoder.baseAddress!.pointee
-            colCount = dimDecoder.baseAddress!.advanced(by: 1).pointee
-            
-            flatmap = [Element](repeating: 0, count: rowCount * colCount)
-            
-            let fillStart = dataPtr.baseAddress!.advanced(by: 2 * intSize)
-            let fillBuffer = UnsafeRawBufferPointer(start: fillStart, count: flatmap.count * doubleSize)
-            
-            _ = flatmap.withUnsafeMutableBytes { ftmpPtr in
-                fillBuffer.copyBytes(to: ftmpPtr)
-            }
+        let dimDecoder = buffer.bindMemory(to: Int.self)
+        rowCount = dimDecoder.baseAddress!.pointee
+        colCount = dimDecoder.baseAddress!.advanced(by: 1).pointee
+        
+        flatmap = [Element](repeating: 0, count: rowCount * colCount)
+        
+        let fillStart = buffer.baseAddress!.advanced(by: 2 * intSize)
+        let fillBuffer = UnsafeRawBufferPointer(start: fillStart, count: flatmap.count * doubleSize)
+        
+        _ = flatmap.withUnsafeMutableBytes { ftmpPtr in
+            fillBuffer.copyBytes(to: ftmpPtr)
         }
     }
     
@@ -182,16 +186,23 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     // MARK: Encoding/Decoding
     
     /**
-     * This matrix encoded as a `Data` object for use of reading and writing to files, or whatever is to be done!
+     * An immutable buffer pointer referencing the bytes of the encoded form of this neural network
      */
-    public var encodedData: Data {
+    public var encodedDataBuffer: UnsafeRawBufferPointer {
         encode()
     }
     
     /**
-     * Encodes this matrix into a raw data object
+     * This matrix encoded as a `Data` object for use of reading and writing to files, or whatever is to be done!
      */
-    fileprivate func encode() -> Data {
+    public var encodedData: Data {
+        Data(encodedDataBuffer)
+    }
+    
+    /**
+     * Encodes this matrix into a raw data object and returns a pointer to the buffer of bytes
+     */
+    fileprivate func encode() -> UnsafeRawBufferPointer {
         
         let intSize = MemoryLayout<Int>.size
         let doubleSize = MemoryLayout<Double>.size
@@ -200,8 +211,8 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         var size = intSize * 2 // encode the rows and columns
         size += doubleSize * count // allocate space for each element
         
-        let bytes = UnsafeMutableRawBufferPointer.allocate(byteCount: size, alignment: 1).bindMemory(to: UInt8.self)
-        
+        let bytes = UnsafeMutableRawBufferPointer.allocate(byteCount: size, alignment: 1)
+    
         _ = [rowCount, colCount].withUnsafeBytes { ptr in
             ptr.bindMemory(to: UInt8.self).copyBytes(to: bytes, count: 2 * intSize)
         }
@@ -217,7 +228,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
             ptr.bindMemory(to: UInt8.self).copyBytes(to: fillBuffer)
         }
         
-        return Data(buffer: bytes)
+        return UnsafeRawBufferPointer(bytes)
         
     }
     

@@ -15,7 +15,7 @@ final class MatrixKitTests: XCTestCase {
     func testReadWrite() throws {
         for _ in 1...100 {
             let matrix = MatrixKitTests.makeRandomMatrix(rows: Int.random(in: 1...100), cols: Int.random(in: 1...100))
-            XCTAssertEqual(matrix, Matrix(matrix.encodedData))
+            XCTAssertEqual(matrix, Matrix(data: matrix.encodedData))
         }
     }
     
