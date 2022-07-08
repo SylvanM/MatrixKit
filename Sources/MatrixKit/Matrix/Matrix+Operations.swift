@@ -7,6 +7,7 @@
 
 import Foundation
 import Accelerate
+import simd
 
 public extension Matrix {
     
@@ -229,9 +230,25 @@ public extension Matrix {
             }
         }
         
-        
-        
         return product
+    }
+    
+    /**
+     * Computes the magnitude squared of this matrix. That is, the sum of the squares of all elements of the matrix
+     */
+    internal func computeMagnitudeSquared() -> Double {
+        withBaseAddress { baseAddress in
+            // TODO: Right now this can only take a 32 bit integer as the size, so eventally might have to
+            // split the computation up for larger vectors.
+            cblas_dnrm2(Int32(count), baseAddress, 1)
+        }
+    }
+    
+    /**
+     * Computes the magnitude of this matrix
+     */
+    internal func computeMagnitude() -> Double {
+        sqrt(computeMagnitudeSquared())
     }
     
     // MARK: - Row Operations and Guassian Elimination

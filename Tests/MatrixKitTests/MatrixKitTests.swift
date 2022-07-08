@@ -15,23 +15,25 @@ final class MatrixKitTests: XCTestCase {
     func testReadWrite() throws {
         for _ in 1...100 {
             let matrix = MatrixKitTests.makeRandomMatrix(rows: Int.random(in: 1...100), cols: Int.random(in: 1...100))
-            XCTAssertEqual(matrix, Matrix(data: matrix.encodedData))
+            let buffer = matrix.encodedDataBuffer
+            let decoded = Matrix(buffer: buffer)
+            XCTAssertEqual(matrix, decoded)
         }
     }
     
-    func testSwift() {
-        struct Te {
-            var arr: [Double]
-            var ptr: UnsafeMutablePointer<Double> {
-                let unmut = arr.withUnsafeBufferPointer { $0 }.baseAddress!
-                return UnsafeMutablePointer(mutating: unmut)
-            }
+    func testMagnitude() {
+        
+        for i in 1...100 {
+            
+            let zero = Matrix(vector: [Double](repeating: 0, count: i))
+            XCTAssertEqual(zero.magnitudeSquared, 0)
+            
+            let theta = Double.random(in: -1000...1000)
+            let x = cos(theta)
+            let y = sin(theta)
+            let vect = Matrix(vector: [x, y])
+            XCTAssertEqual(vect.magnitudeSquared, 1, accuracy: floatingPointAccuracy)
         }
-        
-        let a = Te(arr: [0, 1, 2])
-        var b = a
-        
-        b.arr[0] = -1
         
     }
     

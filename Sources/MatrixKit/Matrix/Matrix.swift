@@ -208,6 +208,27 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         rowCount == colCount
     }
     
+    /**
+     * The magnitude of this matrix
+     */
+    public var magnitude: Double {
+        computeMagnitude()
+    }
+    
+    /**
+     * Computes the matnitude squared of this matrix
+     */
+    public var magnitudeSquared: Double {
+        computeMagnitudeSquared()
+    }
+    
+    /**
+     * Whether or not this represents a vector
+     */
+    public var isVector: Bool {
+        colCount == 1
+    }
+    
     public var description: String {
         makePrettyString()
     }
@@ -302,13 +323,19 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     
     // MARK: Manipulation
     
-    internal func withBaseAddress(_ closure: (UnsafePointer<Double>) -> ()) {
+    internal func withBaseAddress(_ closure: (UnsafePointer<Element>) -> ()) {
         flatmap.withUnsafeBufferPointer { buffPtr in
             closure(buffPtr.baseAddress!)
         }
     }
     
-    internal mutating func withMutableBaseAddress(_ closure: (UnsafeMutablePointer<Double>) -> ()) {
+    internal func withBaseAddress(_ closure: (UnsafePointer<Element>) -> Double) -> Double {
+        flatmap.withUnsafeBufferPointer { buffPtr in
+            closure(buffPtr.baseAddress!)
+        }
+    }
+    
+    internal mutating func withMutableBaseAddress(_ closure: (UnsafeMutablePointer<Element>) -> ()) {
         flatmap.withUnsafeMutableBufferPointer { muttablePtr in
             closure(muttablePtr.baseAddress!)
         }
