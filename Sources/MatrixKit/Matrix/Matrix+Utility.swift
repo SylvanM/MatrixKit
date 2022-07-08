@@ -175,7 +175,10 @@ public extension Matrix {
     // MARK: Element Manipulation
     
     /**
-     * Applies a function to each element of this matrix, in place
+     * Applies a function to each element of this matrix, in place.
+     *
+     * This method does **not** guarantee that each element is accessed in any particular order, nor does it
+     * guarantee that each element is affected in the same thread.
      */
     mutating func applyToAll(_ closure: (inout Element) -> ()) {
         for i in 0..<flatmap.count {
@@ -186,9 +189,19 @@ public extension Matrix {
     /**
      * Returns a new matrix with each element being the result of a function applied to the corresponding
      * element of this matrix.
+     *
+     * This method does **not** guarantee that each element is accessed in any particular order, nor does it
+     * guarantee that each element is affected in the same thread.
      */
     func applyingToAll(_ closure: (Element) -> Element) -> Matrix {
         Matrix(flatmap: flatmap.map(closure), cols: colCount)
+    }
+    
+    /**
+     * Calls a closure for each element of the matrix, in order from left to right, top to bottom,
+     */
+    func forEach(_ body: (Element) throws -> Void) rethrows {
+        try flatmap.forEach(body)
     }
     
     /**
@@ -230,7 +243,5 @@ public extension Matrix {
         
         return Matrix(flatmap: newFlatmap, cols: colCount)
     }
-    
-    
     
 }
