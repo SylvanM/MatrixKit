@@ -249,6 +249,16 @@ final class MatrixKitTests: XCTestCase {
         
     }
     
+    func testHadamard() {
+        let v1 = Matrix(vector: [1, 2, 3, 5])
+        let v2 = Matrix(vector: [5, 3, 2, 1])
+        let hproduct1 = v1.hadamard(with: v2)
+        let hproduct2 = v2.hadamard(with: v1)
+        
+        XCTAssertEqual(hproduct1, hproduct2)
+        XCTAssertEqual(hproduct1, Matrix(vector: [5, 6, 6, 5]))
+    }
+    
     func testRowReduction() {
         
         let echelonFormA: Matrix = [

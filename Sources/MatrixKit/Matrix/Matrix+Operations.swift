@@ -251,6 +251,27 @@ public extension Matrix {
         sqrt(computeMagnitudeSquared())
     }
     
+    /**
+     * Computes the element-wise Hadamard product
+     *
+     * - Parameter other: Another matrix (vector) to compute the hadamard product with this one
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     *
+     * - Returns: A new matrix (vector) whos elements are the element wise products of the elements of `self` and `other`.
+     */
+    func hadamard(with other: Matrix) -> Matrix {
+        var product = Matrix(rows: self.rowCount, cols: self.colCount)
+        product.withMutableBaseAddress { productBaseAddress in
+            withBaseAddress { baseAddress in
+                other.withBaseAddress { otherBaseAddress in
+                    vDSP_vmulD(baseAddress, 1, otherBaseAddress, 1, productBaseAddress, 1, UInt(count))
+                }
+            }
+        }
+        return product
+    }
+    
     // MARK: - Row Operations and Guassian Elimination
     
     /**
