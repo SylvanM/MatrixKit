@@ -7,6 +7,7 @@
 
 import Foundation
 import Security
+import Accelerate
 
 public extension Matrix {
     
@@ -242,6 +243,19 @@ public extension Matrix {
         newFlatmap[(row * colCount)..<newFlatmap.count] = flatmap[((row + 1) * colCount)..<flatmap.count]
         
         return Matrix(flatmap: newFlatmap, cols: colCount)
+    }
+    
+    /**
+     * Computes the transpose of this matrix and stores the result in `result
+     *
+     * - Precondition: `result.colCount == self.rowCount && result.rowCount == self.colCount`
+     */
+    internal func computeTranspose(result: inout Matrix) {
+        withBaseAddress { baseAddress in
+            result.withMutableBaseAddress { resultAddress in
+                vDSP_mtransD(baseAddress, 1, resultAddress, 1, UInt(colCount), UInt(rowCount))
+            }
+        }
     }
     
 }

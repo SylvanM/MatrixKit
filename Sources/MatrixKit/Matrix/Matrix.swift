@@ -275,6 +275,17 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         return colArray
     }
     
+    /**
+     * The transpose of this matrix or vector
+     */
+    public var transpose: Matrix {
+        if isVector { return Matrix(flatmap) }
+        
+        var trans = Matrix(rows: colCount, cols: rowCount)
+        computeTranspose(result: &trans)
+        return trans
+    }
+    
     // MARK: - Subscripts
     
     /**

@@ -249,6 +249,19 @@ final class MatrixKitTests: XCTestCase {
         
     }
     
+    func testTranspose() {
+        let a: Matrix = [
+            [3, 0, 1, 2],
+            [6, 1, 0, 0],
+            [12, 1, 2, 4],
+            [6, 0, 2, 4],
+            [9, 0, 1, 2]
+        ]
+        
+        print(a)
+        print(a.transpose)
+    }
+    
     func testHadamard() {
         let v1 = Matrix(vector: [1, 2, 3, 5])
         let v2 = Matrix(vector: [5, 3, 2, 1])
