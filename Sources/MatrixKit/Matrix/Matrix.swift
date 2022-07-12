@@ -26,7 +26,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * A flattened, one dimensional representation of this matrix, row-wise.
      */
-    internal var flatmap: [Element]
+    public var flatmap: [Element]
     
     // MARK: Public Properties
     
