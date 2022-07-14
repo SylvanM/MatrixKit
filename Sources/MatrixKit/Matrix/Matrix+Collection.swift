@@ -34,7 +34,12 @@ extension Matrix: Collection {
     // MARK: Subscripts
     
     public subscript(position: Int) -> Double {
-        flatmap[position]
+        get {
+            flatmap[position]
+        }
+        set {
+            flatmap[position] = newValue
+        }
     }
     
     // MARK: Collection Utility
