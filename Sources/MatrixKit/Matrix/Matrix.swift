@@ -290,16 +290,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     
     /**
      * Accesses the row at `row`
-     *
-     * This is equivalent to `self[row: row]`
-     */
-    public subscript(row: Int) -> [Element] {
-        get { self[row: row] }
-        set { self[row: row] = newValue }
-    }
-    
-    /**
-     * Accesses the row at `row`
      */
     public subscript(row row: Int) -> [Element] {
         get { Array(flatmap[(row * colCount)..<(colCount * (row + 1))]) }
@@ -340,7 +330,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         }
     }
     
-    internal func withBaseAddress(_ closure: (UnsafePointer<Element>) -> Double) -> Double {
+    internal func withBaseAddress<T>(_ closure: (UnsafePointer<Element>) -> T) -> T {
         flatmap.withUnsafeBufferPointer { buffPtr in
             closure(buffPtr.baseAddress!)
         }

@@ -49,8 +49,6 @@ final class MatrixKitTests: XCTestCase {
         
         XCTAssertEqual(a[0, 0], 0)
         XCTAssertEqual(a[2, 3], 2)
-        XCTAssertEqual(a[0][0], 0)
-        XCTAssertEqual(a[2][3], 2)
         XCTAssertEqual(a[0, 3], 5)
         
         XCTAssertEqual(a[col: 3], [5, 7, 2])
