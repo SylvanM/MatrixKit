@@ -27,6 +27,14 @@ public extension Matrix {
         self.rank == other.rank
     }
     
+    /**
+     * Returns `true` if this matrix has the same dimensions as another matrix
+     */
+    @inlinable
+    func hasSameDimensions(as other: Matrix) -> Bool {
+        self.rowCount == other.rowCount && self.colCount == other.colCount
+    }
+    
     // MARK: Matrix Operations
     
     /**
@@ -74,6 +82,8 @@ public extension Matrix {
      * - Parameter other: `Matrix` to add.
      */
     mutating func add(_ other: Matrix) {
+        assert(hasSameDimensions(as: other), "Cannot add matrices of different dimensions")
+        
         var copy = flatmap
         
         other.withBaseAddress { otherPtr in
@@ -92,6 +102,8 @@ public extension Matrix {
      * - Parameter other: `Matrix` to subtract.
      */
     mutating func subtract(_ other: Matrix) {
+        assert(hasSameDimensions(as: other), "Cannot subtract matrices of different dimensions")
+        
         var copy = flatmap
         
         other.withBaseAddress { otherPtr in
@@ -111,6 +123,8 @@ public extension Matrix {
      * - Returns: The difference of this matrix and `other`.
      */
     func difference(subtracting other: Matrix) -> Matrix {
+        assert(hasSameDimensions(as: other), "Cannot subtract matrices of different dimensions")
+        
         var out = self
         
         out.withMutableBaseAddress { outMutableBaseAddress in
@@ -132,6 +146,7 @@ public extension Matrix {
      * - Returns: The sum of `self` and `other`.
      */
     func sum(adding other: Matrix) -> Matrix {
+        assert(hasSameDimensions(as: other), "Cannot add matrices of different dimensions")
         var out = self
         
         out.withMutableBaseAddress { outMutableBaseAddress in
@@ -153,6 +168,7 @@ public extension Matrix {
      * - Returns: A nonnegative number representing how far off these matrices are from each other, squared
      */
     func distanceSquared(from other: Matrix) -> Element {
+        assert(hasSameDimensions(as: other), "Cannot find distance between matrices of different dimensions")
         var ds: Double = 0
         
         other.withBaseAddress { otherBaseAddress in
@@ -186,6 +202,8 @@ public extension Matrix {
      * - Returns: The matrix product `lhs * self`
      */
     func leftMultiply(by lhs: Matrix) -> Matrix {
+        assert(lhs.colCount == self.rowCount, "Invalid dimensions for matrix multiplcation")
+        
         var product = Matrix(rows: lhs.rowCount, cols: self.colCount)
         
         withBaseAddress { basePtr in
@@ -215,6 +233,8 @@ public extension Matrix {
      * - Returns: The matrix product `self * rhs`
      */
     func rightMultiply(onto rhs: Matrix) -> Matrix {
+        assert(self.colCount == rhs.rowCount, "Invalid dimensions for matrix multiplcation")
+        
         var product = Matrix(rows: self.rowCount, cols: rhs.colCount)
         
         withBaseAddress { basePtr in
@@ -261,6 +281,8 @@ public extension Matrix {
      * - Returns: A new matrix (vector) whos elements are the element wise products of the elements of `self` and `other`.
      */
     func hadamard(with other: Matrix) -> Matrix {
+        assert(hasSameDimensions(as: other), "Cannot compute Hadamard with matrices of different dimensions")
+        
         var product = Matrix(rows: self.rowCount, cols: self.colCount)
         product.withMutableBaseAddress { productBaseAddress in
             withBaseAddress { baseAddress in
@@ -282,10 +304,17 @@ public extension Matrix {
      * - Parameter rowOperation: `ElementaryOperation` to perform as a row operation
      */
     mutating func apply(rowOperation: ElementaryOperation) {
+        
         switch rowOperation {
-            case .scale(let row, let scalar):           scale(row: row, by: scalar)
-            case .swap(let rowA, let rowB):             swap(row: rowA, with: rowB)
-            case .add(let scalar, let row, let toRow):  add(row: row, scaledBy: scalar, toRow: toRow)
+            case .scale(let row, let scalar):
+                assert(row < rowCount, "Row index out of bounds")
+                scale(row: row, by: scalar)
+            case .swap(let rowA, let rowB):
+                assert(rowA < rowCount && rowB < rowCount, "Row index out of bounds")
+                swap(row: rowA, with: rowB)
+            case .add(let scalar, let row, let toRow):
+                assert(row < rowCount, "Row index out of bounds")
+                add(row: row, scaledBy: scalar, toRow: toRow)
         }
     }
     
@@ -340,9 +369,15 @@ public extension Matrix {
         var copy = self
         copy.withMutableBaseAddress { basePtr in
             switch columnOperation {
-                case .scale(let col, var scalar): scale(col: col, by: &scalar, basePtr: basePtr)
-                case .swap(let colA, let colB): swap(col: colA, with: colB, basePtr: basePtr)
-                case .add(var scalar, let col, let toCol): add(col: col, scaledBy: &scalar, toCol: toCol, basePtr: basePtr)
+                case .scale(let col, var scalar):
+                    assert(col < colCount, "Column index out of bounds")
+                    scale(col: col, by: &scalar, basePtr: basePtr)
+                case .swap(let colA, let colB):
+                    assert(colA < colCount && colB < colCount, "Column index out of bounds")
+                    swap(col: colA, with: colB, basePtr: basePtr)
+                case .add(var scalar, let col, let toCol):
+                    assert(col < colCount, "Column index out of bounds")
+                    add(col: col, scaledBy: &scalar, toCol: toCol, basePtr: basePtr)
             }
         }
         self.flatmap = copy.flatmap
