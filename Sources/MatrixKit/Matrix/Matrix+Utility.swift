@@ -111,7 +111,7 @@ public extension Matrix {
         let ending = "\\end{array}" + endBracket
         
         let rowStrings: String = {
-            let firstString = makeRowString(self[0])
+            let firstString = makeRowString(self[row: 0])
             
             if rowCount == 1 {
                 return firstString
@@ -199,13 +199,6 @@ public extension Matrix {
     }
     
     /**
-     * Calls a closure for each element of the matrix, in order from left to right, top to bottom,
-     */
-    func forEach(_ body: (Element) throws -> Void) rethrows {
-        try flatmap.forEach(body)
-    }
-    
-    /**
      * Returns a new matrix which is identical to `self` with a certain column omitted
      */
     func omitting(col: Int) -> Matrix {
@@ -257,5 +250,7 @@ public extension Matrix {
             }
         }
     }
+    
+    
     
 }
