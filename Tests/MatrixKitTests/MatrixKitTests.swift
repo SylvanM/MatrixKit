@@ -1,6 +1,5 @@
 import XCTest
 import MatrixKit
-import MatrixKit
 import Accelerate
 
 final class MatrixKitTests: XCTestCase {
@@ -331,4 +330,7 @@ final class MatrixKitTests: XCTestCase {
     
     }
     
+    func testNormalization() throws {
+        
+    }
 }

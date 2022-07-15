@@ -294,6 +294,13 @@ public extension Matrix {
         return product
     }
     
+    /**
+     * Scales every this matrix by the multiplicative inverse of `self.magnitude`, so that the new magnitude is 1.
+     */
+    mutating func normalize() {
+        scale(by: 1 / magnitude)
+    }
+    
     // MARK: - Row Operations and Guassian Elimination
     
     /**

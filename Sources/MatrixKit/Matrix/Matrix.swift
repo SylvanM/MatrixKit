@@ -26,7 +26,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * A flattened, one dimensional representation of this matrix, row-wise.
      */
-    public var flatmap: [Element]
+    internal var flatmap: [Element]
     
     // MARK: Public Properties
     
@@ -213,6 +213,15 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      */
     public var magnitude: Double {
         computeMagnitude()
+    }
+    
+    /**
+     * A scale of this matrix with a magnitude of 1
+     */
+    public var normalized: Matrix {
+        var norm = self
+        norm.normalize()
+        return norm
     }
     
     /**
