@@ -251,6 +251,17 @@ public extension Matrix {
         }
     }
     
-    
+    /**
+     * Sets every element of this matrix to zero
+     */
+    mutating func setToZero() {
+        var new = flatmap
+        
+        new.withUnsafeMutableBufferPointer { buffer in
+            vDSP_vclrD(buffer.baseAddress!, 1, UInt(count))
+        }
+        
+        self.flatmap = new
+    }
     
 }
