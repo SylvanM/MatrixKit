@@ -228,7 +228,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     /**
      * A matrix of the same dimensions as this one, but with all elements set to zero
      */
-    var zero: Matrix {
+    public var zero: Matrix {
         var new = self
         new.setToZero()
         return new
