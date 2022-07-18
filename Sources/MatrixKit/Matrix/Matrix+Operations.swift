@@ -298,6 +298,7 @@ public extension Matrix {
      * Scales every this matrix by the multiplicative inverse of `self.magnitude`, so that the new magnitude is 1.
      */
     mutating func normalize() {
+        if magnitude.isZero { return }
         scale(by: 1 / magnitude)
     }
     
