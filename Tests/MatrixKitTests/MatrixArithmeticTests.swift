@@ -32,6 +32,10 @@ class MatrixArithmeticTests: XCTestCase {
         }
     }
     
+    func testMatrixMultiplication() throws {
+        
+    }
+    
     func testSubtraction() throws {
         
         
