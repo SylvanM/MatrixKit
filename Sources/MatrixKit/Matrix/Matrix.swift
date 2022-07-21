@@ -305,50 +305,6 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         return trans
     }
     
-    // MARK: - Subscripts
-    
-    /**
-     * Accesses the row at `row`
-     */
-    public subscript(row row: Int) -> [Element] {
-        get { Array(self[rowSlice: row]) }
-        set { self[rowSlice: row] = ArraySlice(newValue) }
-    }
-    
-    /**
-     * Accesses the row at `row` as an `ArraySlice`
-     */
-    public subscript(rowSlice row: Int) -> ArraySlice<Element> {
-        get { flatmap[(row * colCount)..<(colCount * (row + 1))] }
-        set { flatmap[(colCount * row)..<(colCount * (row + 1))] = newValue }
-    }
-    
-    /**
-     * Accesses the entry at row `row` and column `col`
-     */
-    public subscript(row: Int, col: Int) -> Element {
-        get { self.flatmap[row * colCount + col] }
-        set { self.flatmap[row * colCount + col] = newValue }
-    }
-    
-    /**
-     * Accesses the column at `col`
-     */
-    public subscript(col col: Int) -> [Element] {
-        get {
-            var cols = [Element](repeating: 0, count: rowCount)
-            for i in 0..<rowCount {
-                cols[i] = self[i, col]
-            }
-            return cols
-        }
-        set {
-            for i in 0..<rowCount {
-                self[i, col] = newValue[i]
-            }
-        }
-    }
-    
     // MARK: Manipulation
     
     internal func withBaseAddress(_ closure: (UnsafePointer<Element>) -> ()) {
