@@ -311,8 +311,16 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * Accesses the row at `row`
      */
     public subscript(row row: Int) -> [Element] {
-        get { Array(flatmap[(row * colCount)..<(colCount * (row + 1))]) }
-        set { flatmap[(colCount * row)..<(colCount * (row + 1))] = ArraySlice(newValue) }
+        get { Array(self[rowSlice: row]) }
+        set { self[rowSlice: row] = ArraySlice(newValue) }
+    }
+    
+    /**
+     * Accesses the row at `row` as an `ArraySlice`
+     */
+    public subscript(rowSlice row: Int) -> ArraySlice<Element> {
+        get { flatmap[(row * colCount)..<(colCount * (row + 1))] }
+        set { flatmap[(colCount * row)..<(colCount * (row + 1))] = newValue }
     }
     
     /**

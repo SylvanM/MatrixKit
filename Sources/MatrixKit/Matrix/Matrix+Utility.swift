@@ -264,4 +264,49 @@ public extension Matrix {
         self.flatmap = new
     }
     
+    // MARK: Matrix Concatenation
+    
+    /**
+     * Concatenates another matrix to the right of this matrix.
+     *
+     * Given `A` a `n` by `m` matrix, and `B` a `n` by `p` matrix,
+     * `A.sideContatenating(B)` returns a `n` by `m + p` matrix of the form `[ A | B ]`
+     */
+    func sideConcatenating(_ other: Matrix) -> Matrix {
+        var newFlatmap = [Element](repeating: 0, count: self.flatmap.count + other.flatmap.count)
+        
+        var offset = 0
+        
+        for r in 0..<rowCount {
+            // fill in elements from self
+            newFlatmap[offset..<(offset + self.colCount)] = self[rowSlice: r]
+            
+            // fill in elements from other
+            newFlatmap[(offset + self.colCount)..<(offset + self.colCount + other.colCount)] = other[rowSlice: r]
+            
+            offset += self.colCount + other.colCount
+        }
+        
+        return Matrix(flatmap: newFlatmap, cols: self.colCount + other.colCount)
+    }
+    
+    /**
+     * Concatenates another matrix to the bottom of this matrix.
+     *
+     * Given `A` a `n` by `m` matrix, and `B` a `p` by `m` matrix,
+     * `A.sideContatenating(B)` returns a `n + p` by `m` matrix of the form
+     *
+     * ```
+     * ┌ A ┐
+     * | - |
+     * └ B ┘
+     * ```
+     */
+    func bottomConcatenating(_ other: Matrix) -> Matrix {
+        var newFlatmap = [Element](repeating: 0, count: self.flatmap.count + other.flatmap.count)
+        newFlatmap[0..<self.flatmap.count] = self.flatmap[0..<flatmap.count]
+        newFlatmap[self.flatmap.count..<newFlatmap.count] = other.flatmap[0..<other.flatmap.count]
+        return Matrix(flatmap: newFlatmap, cols: self.colCount)
+    }
+    
 }
