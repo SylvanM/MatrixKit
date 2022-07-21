@@ -273,6 +273,8 @@ public extension Matrix {
      * `A.sideContatenating(B)` returns a `n` by `m + p` matrix of the form `[ A | B ]`
      */
     func sideConcatenating(_ other: Matrix) -> Matrix {
+        assert(self.rowCount == other.rowCount)
+        
         var newFlatmap = [Element](repeating: 0, count: self.flatmap.count + other.flatmap.count)
         
         var offset = 0
@@ -303,6 +305,8 @@ public extension Matrix {
      * ```
      */
     func bottomConcatenating(_ other: Matrix) -> Matrix {
+        assert(self.colCount == other.colCount)
+        
         var newFlatmap = [Element](repeating: 0, count: self.flatmap.count + other.flatmap.count)
         newFlatmap[0..<self.flatmap.count] = self.flatmap[0..<flatmap.count]
         newFlatmap[self.flatmap.count..<newFlatmap.count] = other.flatmap[0..<other.flatmap.count]
