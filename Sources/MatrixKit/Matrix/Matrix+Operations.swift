@@ -438,4 +438,28 @@ public extension Matrix {
         return new
     }
     
+    /**
+     * Sums accross the columns of this matrix to produce a column vector, whos elements are the sum of each row.
+     */
+    func rowSum() -> Matrix {
+        var sum = Matrix(rows: rowCount, cols: 1)
+        
+        sum.withMutableBaseAddress { sumAddr in
+            withBaseAddress { baseAddr in
+                for c in 0..<colCount {
+                    let startAddr = baseAddr.advanced(by: c)
+                    vDSP_vaddD(
+                        startAddr,
+                        colCount,
+                        sumAddr, 1,
+                        sumAddr, 1,
+                        UInt(rowCount)
+                    )
+                }
+            }
+        }
+        
+        return sum
+    }
+    
 }

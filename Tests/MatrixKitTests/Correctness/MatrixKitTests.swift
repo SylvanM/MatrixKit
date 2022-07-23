@@ -334,13 +334,22 @@ final class MatrixKitTests: XCTestCase {
         
     }
     
-    func testValueType() throws {
+    func testRowColSums() throws {
         
-        var array: [String]
+        let iden = Matrix.identity(forDim: 70) // arbitrary dimension
+        XCTAssertTrue(iden.rowSum().allSatisfy { $0 == 1 })
         
-        array = ["Hello", "world"]
+        let a: Matrix = [
+            [1, 3, 5, 7],
+            [1, 0, -1, 3],
+            [0, 10, -9, 4]
+        ]
         
-        print(array)
+        XCTAssertEqual(a.rowSum(), [
+            [16],
+            [3],
+            [5]
+        ])
         
     }
 }
