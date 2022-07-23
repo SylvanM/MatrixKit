@@ -274,22 +274,13 @@ public extension Matrix {
      */
     func sideConcatenating(_ other: Matrix) -> Matrix {
         assert(self.rowCount == other.rowCount)
+
+        var concatted = Matrix(rows: self.rowCount, cols: self.colCount + other.colCount)
         
-        var newFlatmap = [Element](repeating: 0, count: self.flatmap.count + other.flatmap.count)
+        concatted[0..<rowCount, 0..<colCount] = self
+        concatted[0..<rowCount, colCount..<concatted.colCount] = other
         
-        var offset = 0
-        
-        for r in 0..<rowCount {
-            // fill in elements from self
-            newFlatmap[offset..<(offset + self.colCount)] = self[rowSlice: r]
-            
-            // fill in elements from other
-            newFlatmap[(offset + self.colCount)..<(offset + self.colCount + other.colCount)] = other[rowSlice: r]
-            
-            offset += self.colCount + other.colCount
-        }
-        
-        return Matrix(flatmap: newFlatmap, cols: self.colCount + other.colCount)
+        return concatted
     }
     
     /**
@@ -307,10 +298,12 @@ public extension Matrix {
     func bottomConcatenating(_ other: Matrix) -> Matrix {
         assert(self.colCount == other.colCount)
         
-        var newFlatmap = [Element](repeating: 0, count: self.flatmap.count + other.flatmap.count)
-        newFlatmap[0..<self.flatmap.count] = self.flatmap[0..<flatmap.count]
-        newFlatmap[self.flatmap.count..<newFlatmap.count] = other.flatmap[0..<other.flatmap.count]
-        return Matrix(flatmap: newFlatmap, cols: self.colCount)
+        var concatted = Matrix(rows: self.rowCount + other.rowCount, cols: self.colCount)
+        
+        concatted[0..<rowCount, 0..<colCount] = self
+        concatted[rowCount..<concatted.rowCount, 0..<colCount] = other
+        
+        return concatted
     }
     
 }
