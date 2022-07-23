@@ -37,6 +37,31 @@ class MatrixUtilityTests: XCTestCase {
         
     }
     
+    func testSubmatrixSubscript() throws {
+        
+        var b2: Matrix = [
+            [0, 0, 0, 1, 2],
+            [3, 0, 0, 1, 2],
+            [0, 0, 2, 1, 0]
+        ]
+        
+        let c2: Matrix = [
+            [9, 2],
+            [5, 2],
+            [1, 1]
+        ]
+        
+        b2[0..<3, 1..<3] = c2
+        
+        XCTAssertEqual(b2, [
+            [0, 9, 2, 1, 2],
+            [3, 5, 2, 1, 2],
+            [0, 1, 1, 1, 0]
+        ])
+        
+        XCTAssertEqual(b2[1..<2, 2..<4], [[2, 1]])
+    }
+    
     func testConcatenating() throws {
         let a: Matrix = [
             [0, 1],

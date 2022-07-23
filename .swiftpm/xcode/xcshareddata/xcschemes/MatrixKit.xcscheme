@@ -53,10 +53,28 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "MatrixArithmeticTests">
+               </Test>
+               <Test
                   Identifier = "MatrixKitPerformanceTests">
                </Test>
                <Test
                   Identifier = "MatrixKitTests">
+               </Test>
+               <Test
+                  Identifier = "MatrixRandomArithmeticTests">
+               </Test>
+               <Test
+                  Identifier = "MatrixUtilityTests/testConcatenating()">
+               </Test>
+               <Test
+                  Identifier = "MatrixUtilityTests/testDeprecationLabels()">
+               </Test>
+               <Test
+                  Identifier = "MatrixUtilityTests/testExample()">
+               </Test>
+               <Test
+                  Identifier = "MatrixUtilityTests/testPerformanceExample()">
                </Test>
             </SkippedTests>
          </TestableReference>

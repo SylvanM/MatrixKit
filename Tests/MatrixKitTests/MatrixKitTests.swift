@@ -333,4 +333,14 @@ final class MatrixKitTests: XCTestCase {
     func testNormalization() throws {
         
     }
+    
+    func testValueType() throws {
+        
+        var array: [String]
+        
+        array = ["Hello", "world"]
+        
+        print(array)
+        
+    }
 }

@@ -325,6 +325,12 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         }
     }
     
+    internal mutating func withMutableBaseAddress<T>(_ closure: (UnsafeMutablePointer<Element>) -> T) -> T {
+        flatmap.withUnsafeMutableBufferPointer { muttablePtr in
+            closure(muttablePtr.baseAddress!)
+        }
+    }
+    
     // MARK: Enumerations
     
     /**
