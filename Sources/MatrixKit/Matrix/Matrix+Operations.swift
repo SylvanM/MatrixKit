@@ -24,7 +24,7 @@ public extension Matrix {
      * Returns `true` if `other` can be obtained by applying row operations to `self`
      */
     func isRowEquivalent(to other: Matrix) -> Bool {
-        self.rank == other.rank
+        self.rank == other.rank && (self.colCount, self.rowCount) == (other.colCount, other.colCount)
     }
     
     /**
