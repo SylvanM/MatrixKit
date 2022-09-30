@@ -11,18 +11,21 @@ internal extension Matrix {
     
     static func rowEchelon(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) {
         if let pivotsRef = pivotsRef {
-            rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef)
+            _rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef)
         } else {
             var pivots = [Int](repeating: 0, count: matrix.colCount)
-            rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: &pivots)
+            _rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: &pivots)
         }
-        
     }
     
     static func reducedRowEchelon(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil) {
         var pivots = [Int](repeating: 0, count: matrix.colCount)
-        rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: &pivots)
-        reducedRowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: &pivots)
+        reducedRowEchelon(on: &matrix, withRecipient: recipient, pivotsRef: &pivots)
+    }
+    
+    static func reducedRowEchelon(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>) {
+        rowEchelon(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef)
+        _reducedRowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef)
     }
     
 }
@@ -39,7 +42,7 @@ fileprivate extension Matrix {
      * - Parameter startingCol: The column at which to start, so that this can be recursive.
      * - Parameter pivotRow: The row in `startingCol` to treat as the pivot row.
      */
-    static func rowEchelonRec(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>, startingCol: Int = 0, pivotRow: Int = 0) {
+    static func _rowEchelonRec(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>, startingCol: Int = 0, pivotRow: Int = 0) {
         
         if pivotRow == matrix.rowCount || startingCol == matrix.colCount {
             if startingCol != matrix.colCount {
@@ -65,14 +68,14 @@ fileprivate extension Matrix {
                     recipient?.pointee.apply(rowOperation: swapOp)
                     
                     // now, just do row reduction after we've swapped.
-                    rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol, pivotRow: pivotRow)
+                    _rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol, pivotRow: pivotRow)
                     return
                 }
             }
             
             // there are only zeros from here down, so this entry is not a pivot.
             pivotsRef.pointee[startingCol] = -1
-            rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1, pivotRow: pivotRow)
+            _rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1, pivotRow: pivotRow)
             return
         }
         
@@ -89,7 +92,7 @@ fileprivate extension Matrix {
             recipient?.pointee.apply(rowOperation: elimOp)
         }
         
-        rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1, pivotRow: pivotRow + 1)
+        _rowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1, pivotRow: pivotRow + 1)
     }
     
     /**
@@ -103,7 +106,7 @@ fileprivate extension Matrix {
      * - Parameter recipient: An optional pointer to the matrix on which to perform the same operations performed on `matrix`, by default `nil`.
      * - Parameter pivots: A map of where the pivots are. This should be `nil` on the first call.
      */
-    static func reducedRowEchelonRec(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>, startingCol: Int = 0) {
+    static func _reducedRowEchelonRec(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>, startingCol: Int = 0) {
         if startingCol == matrix.colCount {
             return // we're done
         }
@@ -114,7 +117,7 @@ fileprivate extension Matrix {
         
         if pivotRow == -1 {
             // skip this column
-            reducedRowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1)
+            _reducedRowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1)
             return
         }
         
@@ -143,7 +146,7 @@ fileprivate extension Matrix {
         }
         
         // now do the same on the rest of the matrix!
-        reducedRowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1)
+        _reducedRowEchelonRec(on: &matrix, withRecipient: recipient, pivotsRef: pivotsRef, startingCol: startingCol + 1)
     }
     
 }

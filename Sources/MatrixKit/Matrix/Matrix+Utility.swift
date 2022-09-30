@@ -36,7 +36,20 @@ public extension Matrix {
      * - Returns: A new, random matrix, with all elements in `range.`
      */
     static func random(rows: Int, cols: Int, range: ClosedRange<Element> = 0...1) -> Matrix {
-        let randomFlatmap = [Element](repeating: 0, count: rows * cols).lazy.map { _ in Element.random(in: range) }
+        random(rows: rows, cols: cols) {
+            Element.random(in: range)
+        }
+    }
+    
+    /**
+     * Creates a random matrix
+     *
+     * - Parameter rows: The amount of rows in the random matrix
+     * - Parameter cols: The amount of columns in the random matrix
+     * - Parameter generator: A way of generating random numbers.
+     */
+    static func random(rows: Int, cols: Int, generator rand: @escaping () -> Element) -> Matrix {
+        let randomFlatmap = [Element](repeating: 0, count: rows * cols).lazy.map { _ in rand() }
         return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
     }
     

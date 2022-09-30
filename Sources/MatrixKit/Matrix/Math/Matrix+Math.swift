@@ -7,13 +7,71 @@
 
 import Foundation
 import simd
+import Accelerate
 
 /**
  * Definitions of computed mathematical properties
  */
 public extension Matrix {
     
-    // MARK: Mathematical Properties
+    // MARK: Enums
+    
+    /**
+     * The triangularity of a matrix
+     */
+    enum Triangularity {
+        
+        /**
+         * Upper triangular form
+         */
+        case upper
+        
+        /**
+         * Lower triangular form
+         */
+        case lower
+        
+        /**
+         * A Diagonal matrix
+         */
+        case diagonal
+        
+        /**
+         * Neither upper triangular, lower triangular, nor diagonal
+         */
+        case none
+        
+    }
+    
+    // MARK: - Mathematical Properties
+    
+    /**
+     * The shape of this matrix, whether it is diagonal, lower triangular, or upper triangular
+     */
+    var triangularity: Triangularity {
+        getTriangularity()
+    }
+    
+    /**
+     * Whether this matrix is upper triangular form
+     */
+    var isUpperTriangular: Bool {
+        triangularity == .diagonal || triangularity == .upper
+    }
+    
+    /**
+     * Whether this matrix is lower triangular form
+     */
+    var isLowerTriangular: Bool {
+        triangularity == .diagonal || triangularity == .lower
+    }
+    
+    /**
+     * Whether this matrix is diagonal
+     */
+    var isDiagonal: Bool {
+        triangularity == .diagonal
+    }
     
     /**
      * Computes the determinant of a matrix
@@ -102,12 +160,88 @@ public extension Matrix {
         computeInverse()
     }
     
+    // MARK: - Spaces
+
+    /**
+     * A matrix whose columns form the basis of the kernel of `self`
+     */
+    var kernel: Matrix {
+        computeKernel()
+    }
+    
+    
+    // MARK: - Eigenvalues
+    
+    /**
+     * Returns `true` if the given vector is an eigenvector of this matrix
+     *
+     * - Precondition: `vect.isVector`
+     */
+    func isEigenvector(_ vect: Matrix) -> Bool {
+        let out = self * vect
+        
+        let firstScalar = out[0, 0] / vect[0, 0]
+        
+        return vect * firstScalar == out
+    }
+    
 }
 
 /**
  * Utility functions
  */
 fileprivate extension Matrix {
+    
+    func isUpperTriangular(startingRow: Int = 0) -> Triangularity {
+        if startingRow == rowCount - 1 { return .upper }
+        
+        for r in (startingRow + 1)..<rowCount {
+            if self[r, startingRow] != 0 {
+                return .none
+            }
+        }
+        
+        return isUpperTriangular(startingRow: startingRow + 1)
+        
+    }
+    
+    func isLowerTriangular(startingRow: Int = 0) -> Triangularity {
+        if startingRow == rowCount - 1 { return .lower }
+        
+        for c in (startingRow + 1)..<colCount {
+            if self[startingRow, c] != 0 {
+                return .none
+            }
+        }
+        
+        return isLowerTriangular(startingRow: startingRow + 1)
+    }
+    
+    /**
+     * This assumes the matrix is square
+     */
+    func getTriangularity(startingRow: Int) -> Triangularity {
+        if startingRow == rowCount - 1 { return .diagonal }
+        
+        for c in (startingRow + 1)..<colCount {
+            if self[startingRow, c] != 0 {
+                return isUpperTriangular(startingRow: startingRow)
+            }
+        }
+        
+        for r in (startingRow + 1)..<rowCount {
+            if self[r, startingRow] != 0 {
+                return isLowerTriangular(startingRow: startingRow)
+            }
+        }
+        
+        return getTriangularity(startingRow: startingRow + 1)
+    }
+    
+    func getTriangularity() -> Triangularity {
+        if !isSquare { return .none }
+        return getTriangularity(startingRow: 0)
+    }
     
     /**
      * This function also contains a reference to an array that contains the locations of the pivots so that we don't have to re-find the pivots
@@ -270,6 +404,44 @@ fileprivate extension Matrix {
             
             return sum
         }
+    }
+    
+    // MARK: Kernel Stuff
+    
+    /**
+     * Computes the kernel of this matrix as a linear transformation
+     *
+     * - Returns a matrix whos columns are the basis of the kernel of `self`
+     */
+    func computeKernel() -> Matrix {
+        
+        
+        
+        var pivots = [Int](repeating: 0, count: colCount)
+        var ref = self
+        
+        Matrix.rowEchelon(on: &ref, pivotsRef: &pivots)
+        
+        var tref = ref.transpose
+        
+        // doing row operations is the same as col ops on transpose
+        var recipient = Matrix.identity(forDim: tref.rowCount)
+        Matrix.reducedRowEchelon(on: &tref, withRecipient: &recipient)
+        
+        let alteredIden = recipient.transpose
+        
+        // compute the dimension of the kernel, which is
+        #warning("This can be optimized")
+        let rank = tref.computeRank()
+        
+        let kernelDim = colCount - rank
+        
+        if kernelDim == 0 {
+            return Matrix.zero(rows: colCount, cols: 1)
+        }
+        
+        return alteredIden[0..<alteredIden.rowCount, rank..<alteredIden.colCount]
+        
     }
     
 }

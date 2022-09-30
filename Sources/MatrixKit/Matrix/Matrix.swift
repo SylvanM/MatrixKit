@@ -158,12 +158,31 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     
     // MARK: Static Producers
     
+    /**
+     * Creates the identity matrix for a given dimension
+     *
+     * - Parameter dim: The dimension of the identity matrix
+     *
+     * - Precondition: `dim >= 1`
+     */
     public static func identity(forDim dim: Int) -> Matrix {
         var iden = Matrix(rows: dim, cols: dim)
         for i in 0..<dim {
             iden[i, i] = 1
         }
         return iden
+    }
+    
+    /**
+     * Creates a matrix with all zero entries for given dimensions
+     *
+     * - Parameter rows: The number of rows in this matrix
+     * - Parameter cols: The number of columns in this matrix
+     *
+     * - Precondition: `rows >= 1 && cols >= 1`
+     */
+    public static func zero(rows: Int, cols: Int) -> Matrix {
+        Matrix(flatmap: [Element](repeating: Element.zero, count: rows * cols), cols: cols)
     }
     
     // MARK: Encoding/Decoding
@@ -189,7 +208,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         
         // compute number of bytes needed to encode this matrix
         var size = MemoryLayout<Int>.size * 2 // encode the rows and columns
-        size += MemoryLayout<Double>.size * count // allocate space for each element
+        size += MemoryLayout<Element>.size * count // allocate space for each element
         
         let buffer = UnsafeMutableRawBufferPointer.allocate(byteCount: size, alignment: 1)
         var baseAddress = buffer.baseAddress!
@@ -341,7 +360,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         /**
          * The operation of scaling a row or column (given by its index) by a constant scalar
          */
-        case scale(index: Int, by: Double)
+        case scale(index: Int, by: Element)
         
         /**
          * The operation of switching two rows (or columns), given by their indices
@@ -366,7 +385,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
          * └ 0.0  0.0  0.0  2.0  ┘
          * ```
          */
-        case add(scalar: Double, index: Int, toIndex: Int)
+        case add(scalar: Element, index: Int, toIndex: Int)
         
     }
     

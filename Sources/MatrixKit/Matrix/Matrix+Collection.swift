@@ -79,7 +79,7 @@ extension Matrix: Collection {
     /**
      * Accesses the item in the flatmap at position  `position`
      */
-    public subscript(position: Int) -> Double {
+    public subscript(position: Int) -> Element {
         get { flatmap[position] }
         set { flatmap[position] = newValue }
     }
@@ -147,7 +147,7 @@ extension Matrix: Collection {
     
     // MARK: Collection Utility
     
-    public func allSatisfy(_ predicate: (Double) throws -> Bool) rethrows -> Bool {
+    public func allSatisfy(_ predicate: (Element) throws -> Bool) rethrows -> Bool {
         try flatmap.allSatisfy(predicate)
     }
     
