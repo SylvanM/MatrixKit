@@ -7,7 +7,14 @@
 
 import Foundation
 
+precedencegroup ExponentiationPrecedence {
+  associativity: right
+  higherThan: MultiplicationPrecedence
+}
+
 infix operator ~ : ComparisonPrecedence
+
+infix operator ** : ExponentiationPrecedence
 
 public extension Matrix {
     
@@ -55,6 +62,10 @@ public extension Matrix {
     
     static func * (lhs: Matrix, rhs: Matrix) -> Matrix {
         rhs.leftMultiply(by: lhs)
+    }
+    
+    static func ** (lhs: Matrix, rhs: Int) -> Matrix {
+        Matrix.pow(lhs, rhs)
     }
     
 }

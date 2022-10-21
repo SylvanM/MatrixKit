@@ -169,6 +169,24 @@ public extension Matrix {
         computeKernel()
     }
     
+    // MARK: Advanced Operations
+    
+    /**
+     * Raises a square matrix `m` to an integer power `p`
+     *
+     * - Precondition: `m.isSquare && p >= 0`
+     *
+     * - Returns: `m` raised to `p`
+     */
+    static func pow(_ m: Matrix, _ p: Int) -> Matrix {
+        // TODO: Make this WAYYY better, this is a very temporary solution
+        if p == 0 {
+            return Matrix.identity(forDim: m.rowCount)
+        }
+        
+        return m * pow(m, p - 1)
+    }
+    
     
     // MARK: - Eigenvalues
     

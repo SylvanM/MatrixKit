@@ -25,22 +25,18 @@ class DoingMyHomework: XCTestCase {
         // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
         // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
         
-        let S: Matrix = [
-            [4, 0],
-            [-1, 5],
-            [2, 6],
-            [3, -1]
-        ]
+        let n = 9
         
-        let T: Matrix = [
-            [1, -1, 2, -7],
-            [4, 0, 6, 5],
-            [-1, -2, 8, -3]
-        ]
+        let J = Matrix(rows: n, cols: n) { r, c in
+            1
+        }
         
-        let ToS = T * S
+        let I = Matrix.identity(forDim: n)
         
-        print(ToS)
+        print(J - I)
+        print((J - I) ** 2)
+        print((J - I) ** 3)
+        
     }
 
     func testPerformanceExample() throws {

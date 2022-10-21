@@ -130,7 +130,7 @@ public extension Matrix {
         out.withMutableBaseAddress { outMutableBaseAddress in
             other.withBaseAddress { otherBaseAddress in
                 withBaseAddress { baseAddress in
-                    vDSP_vsubD(baseAddress, 1, otherBaseAddress, 1, outMutableBaseAddress, 1, UInt(flatmap.count))
+                    vDSP_vsubD(otherBaseAddress, 1, baseAddress, 1, outMutableBaseAddress, 1, UInt(flatmap.count))
                 }
             }
         }

@@ -156,6 +156,23 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         self.init(decoded)
     }
     
+    /**
+     * Creates a matrix where the values of the entries are a function of their index
+     *
+     * - Parameter rows: Number of rows in this matrix
+     * - Parameter cols: Number of columns in this matrix
+     * - Parameter valueAt: A closure that takes in row `r` and column `c` to compute the value in `self[r, c]`
+     */
+    public init(rows: Int, cols: Int, valueAt: (Int, Int) -> Element) {
+        // TODO: Parralelize this
+        self.init(rows: rows, cols: cols)
+        for r in 0..<rowCount {
+            for c in 0..<colCount {
+                self[r, c] = valueAt(r, c)
+            }
+        }
+    }
+    
     // MARK: Static Producers
     
     /**
