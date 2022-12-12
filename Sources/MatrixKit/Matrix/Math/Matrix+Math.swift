@@ -433,8 +433,6 @@ fileprivate extension Matrix {
      */
     func computeKernel() -> Matrix {
         
-        
-        
         var pivots = [Int](repeating: 0, count: colCount)
         var ref = self
         
@@ -448,9 +446,11 @@ fileprivate extension Matrix {
         
         let alteredIden = recipient.transpose
         
-        // compute the dimension of the kernel, which is
-        #warning("This can be optimized")
-        let rank = tref.computeRank()
+        // compute the dimension of the kernel
+        
+        let rank = pivots.reduce(into: 0) { partialResult, pivotLoc in
+            partialResult += pivotLoc == -1 ? 0 : 1
+        }
         
         let kernelDim = colCount - rank
         
