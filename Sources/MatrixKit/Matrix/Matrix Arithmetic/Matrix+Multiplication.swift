@@ -12,6 +12,8 @@ import Accelerate
 
 extension Matrix {
     
+    // MARK: Standard Matrix Multiplication
+    
     func defaultLeftMultiply(by lhs: Matrix) -> Matrix {
         assert(lhs.colCount == self.rowCount, "Invalid dimensions for matrix multiplcation")
         
@@ -52,6 +54,56 @@ extension Matrix {
         }
         
         return product
+    }
+    
+    // MARK: More Fun Algorithms
+    
+    /**
+     * Performs the Strassen algorithm on two square matrices whos sizes are a power of two
+     *
+     * - Parameter lhs: A square matrix
+     * - Parameter rhs: A square matrix of the same size
+     *
+     * - Parameter minimumSize: The matrix size at which we should just use the standard algorithm, as it may be faster
+     *
+     * - Precondition: `lhs.isSquare && rhs.isSquare && lhs.colCount == rhs.colCount` and `lhs.colCount` is a power of 2.
+     *
+     * - Returns: The product `lhs * rhs`
+     */
+    static func strassen(lhs: Matrix, rhs: Matrix, minimumSize: Int) -> Matrix {
+        let n = lhs.colCount
+        
+        if n <= minimumSize {
+            return rhs.defaultLeftMultiply(by: lhs)
+        }
+        
+        let a11 = lhs[0..<(n / 2), 0..<(n / 2)]
+        let a12 = lhs[(n / 2)..<n, 0..<(n / 2)]
+        let a21 = lhs[0..<(n / 2), (n / 2)..<n]
+        let a22 = lhs[(n / 2)..<n, (n / 2)..<n]
+        
+        let b11 = rhs[0..<(n / 2), 0..<(n / 2)]
+        let b12 = rhs[(n / 2)..<n, 0..<(n / 2)]
+        let b21 = rhs[0..<(n / 2), (n / 2)..<n]
+        let b22 = rhs[(n / 2)..<n, (n / 2)..<n]
+        
+        let m1 = strassen(lhs: a11 + a22,   rhs: b11 + b22, minimumSize: minimumSize)
+        let m2 = strassen(lhs: a12 + a22,   rhs: b11,       minimumSize: minimumSize)
+        let m3 = strassen(lhs: a21 + a22,   rhs: b11,       minimumSize: minimumSize)
+        let m4 = strassen(lhs: a22,         rhs: b21 - b11, minimumSize: minimumSize)
+        let m5 = strassen(lhs: a11 + a12,   rhs: b22,       minimumSize: minimumSize)
+        let m6 = strassen(lhs: a21 - a11,   rhs: b11 + b12, minimumSize: minimumSize)
+        let m7 = strassen(lhs: a12 - a22,   rhs: b21 + b22, minimumSize: minimumSize)
+        
+        var product = Matrix(rows: n, cols: n)
+        
+        product[0..<(n / 2), 0..<(n / 2)] = m1 + m4 - m5 + m7
+        product[(n / 2)..<n, 0..<(n / 2)] = m3 + m5
+        product[0..<(n / 2), (n / 2)..<n] = m2 + m4
+        product[(n / 2)..<n, (n / 2)..<n] = m1 - m2 + m3 + m6
+        
+        return product
+        
     }
     
 }
