@@ -20,8 +20,24 @@ final class StrassenTests: XCTestCase {
 
     func testExample() throws {
         
-        let k = 2 //Int.random(in: 2...10)
-        let n = Int(pow(2, Double(k)))
+        for k in 0..<32 {
+            let n = Int(pow(2, Double(k)))
+            
+            let a = Matrix.random(rows: n, cols: n)
+
+            let b = Matrix.random(rows: n, cols: n)
+            
+            let standard = a.defaultRightMultiply(onto: b)
+            let strassen = Matrix.strassen(lhs: a, rhs: b, minimumSize: 2)
+            
+            let difference = (standard - strassen).magnitudeSquared
+            XCTAssertLessThan(difference, 0.000001)
+            
+            print(k)
+        }
+    }
+    
+    func testStrassenMBlocks() {
         
         let a: Matrix = [
             [5, 2, 6, 1],
@@ -29,7 +45,7 @@ final class StrassenTests: XCTestCase {
             [3, 8, 1, 4],
             [1, 8, 5, 6]
         ]
-        
+
         let b: Matrix = [
             [7, 5, 8, 0],
             [1, 8, 2, 6],
@@ -37,16 +53,80 @@ final class StrassenTests: XCTestCase {
             [5, 3, 7, 9]
         ]
         
-        let standard = a.defaultRightMultiply(onto: b)
-        let strassen = Matrix.strassen(lhs: a, rhs: b, minimumSize: 2)
+        _ = Matrix.strassen(lhs: a, rhs: b, minimumSize: 2)
         
-        print(strassen)
         print()
-        print(standard)
         
-        let difference = (standard - strassen).magnitudeSquared
+        print(
+            Matrix([
+                [6, 6],
+                [5, 12]
+            ]).rightMultiply(onto: Matrix([
+                [10, 13],
+                [8, 17]
+            ]))
+        )
         
-        print(difference)
+        print(
+            Matrix([
+                [4, 12],
+                [6, 14]
+            ]).rightMultiply(onto: Matrix([
+                [7, 5],
+                [1, 8]
+            ]))
+        )
+        
+        print(
+            Matrix([
+                [5, 2],
+                [0, 6]
+            ]).rightMultiply(onto: Matrix([
+                [5, -8],
+                [-5, -3]
+            ]))
+        )
+        
+        print(
+            Matrix([
+                [2, 4],
+                [5, 6]
+            ]).rightMultiply(onto: Matrix([
+                [2, -1],
+                [4, -1]
+            ]))
+        )
+        
+        print(
+            Matrix([
+                [11, 3],
+                [2, 6]
+            ]).rightMultiply(onto: Matrix([
+                [3, 8],
+                [7, 9]
+            ]))
+        )
+        
+        print(
+            Matrix([
+                [-2, 6],
+                [1, 2]
+            ]).rightMultiply(onto: Matrix([
+                [15, 5],
+                [3, 14]
+            ]))
+        )
+        
+        print(
+            Matrix([
+                [5, -3],
+                [-3, -6]
+            ]).rightMultiply(onto: Matrix([
+                [12, 12],
+                [12, 12]
+            ]))
+        )
+        
     }
 
     func testPerformanceExample() throws {

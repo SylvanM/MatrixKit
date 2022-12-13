@@ -87,33 +87,20 @@ extension Matrix {
         let b21 = rhs[(n / 2)..<n, 0..<(n / 2)]
         let b22 = rhs[(n / 2)..<n, (n / 2)..<n]
         
-//        let m1 = strassen(lhs: a11 + a22,   rhs: b11 + b22, minimumSize: minimumSize)
-//        let m2 = strassen(lhs: a12 + a22,   rhs: b11,       minimumSize: minimumSize)
-//        let m3 = strassen(lhs: a11,         rhs: b12 - b22, minimumSize: minimumSize)
-//        let m4 = strassen(lhs: a22,         rhs: b21 - b11, minimumSize: minimumSize)
-//        let m5 = strassen(lhs: a11 + a12,   rhs: b22,       minimumSize: minimumSize)
-//        let m6 = strassen(lhs: a21 - a11,   rhs: b11 + b12, minimumSize: minimumSize)
-//        let m7 = strassen(lhs: a12 - a22,   rhs: b21 + b22, minimumSize: minimumSize)
-        
-        let m1 = (a11 + a22).defaultRightMultiply(onto: b11 + b22)
-        let m2 = (a12 + a22).defaultRightMultiply(onto: b11)
-        let m3 = (a11).defaultRightMultiply(onto: b12 - b22)
-        let m4 = (a22).defaultRightMultiply(onto: b21 - b11)
-        let m5 = (a11 + a12).defaultRightMultiply(onto: b22)
-        let m6 = (a21 - a11).defaultRightMultiply(onto: b11 + b12)
-        let m7 = (a12 - a22).defaultRightMultiply(onto: b21 + b22)
+        let m1 = strassen(lhs: a11 + a22,   rhs: b11 + b22, minimumSize: minimumSize)
+        let m2 = strassen(lhs: a21 + a22,   rhs: b11,       minimumSize: minimumSize)
+        let m3 = strassen(lhs: a11,         rhs: b12 - b22, minimumSize: minimumSize)
+        let m4 = strassen(lhs: a22,         rhs: b21 - b11, minimumSize: minimumSize)
+        let m5 = strassen(lhs: a11 + a12,   rhs: b22,       minimumSize: minimumSize)
+        let m6 = strassen(lhs: a21 - a11,   rhs: b11 + b12, minimumSize: minimumSize)
+        let m7 = strassen(lhs: a12 - a22,   rhs: b21 + b22, minimumSize: minimumSize)
         
         var product = Matrix(rows: n, cols: n)
         
-        print(product)
-        
         product[0..<(n / 2), 0..<(n / 2)] = m1 + m4 - m5 + m7
         product[0..<(n / 2), (n / 2)..<n] = m3 + m5
-        
-        // these don't work?
         product[(n / 2)..<n, 0..<(n / 2)] = m2 + m4
         product[(n / 2)..<n, (n / 2)..<n] = m1 - m2 + m3 + m6
-        
         
         return product
         
