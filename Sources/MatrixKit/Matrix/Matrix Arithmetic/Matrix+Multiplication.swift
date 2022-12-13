@@ -74,33 +74,46 @@ extension Matrix {
         let n = lhs.colCount
         
         if n <= minimumSize {
-            return rhs.defaultLeftMultiply(by: lhs)
+            return lhs.defaultRightMultiply(onto: rhs)
         }
         
         let a11 = lhs[0..<(n / 2), 0..<(n / 2)]
-        let a12 = lhs[(n / 2)..<n, 0..<(n / 2)]
-        let a21 = lhs[0..<(n / 2), (n / 2)..<n]
+        let a12 = lhs[0..<(n / 2), (n / 2)..<n]
+        let a21 = lhs[(n / 2)..<n, 0..<(n / 2)]
         let a22 = lhs[(n / 2)..<n, (n / 2)..<n]
         
         let b11 = rhs[0..<(n / 2), 0..<(n / 2)]
-        let b12 = rhs[(n / 2)..<n, 0..<(n / 2)]
-        let b21 = rhs[0..<(n / 2), (n / 2)..<n]
+        let b12 = rhs[0..<(n / 2), (n / 2)..<n]
+        let b21 = rhs[(n / 2)..<n, 0..<(n / 2)]
         let b22 = rhs[(n / 2)..<n, (n / 2)..<n]
         
-        let m1 = strassen(lhs: a11 + a22,   rhs: b11 + b22, minimumSize: minimumSize)
-        let m2 = strassen(lhs: a12 + a22,   rhs: b11,       minimumSize: minimumSize)
-        let m3 = strassen(lhs: a21 + a22,   rhs: b11,       minimumSize: minimumSize)
-        let m4 = strassen(lhs: a22,         rhs: b21 - b11, minimumSize: minimumSize)
-        let m5 = strassen(lhs: a11 + a12,   rhs: b22,       minimumSize: minimumSize)
-        let m6 = strassen(lhs: a21 - a11,   rhs: b11 + b12, minimumSize: minimumSize)
-        let m7 = strassen(lhs: a12 - a22,   rhs: b21 + b22, minimumSize: minimumSize)
+//        let m1 = strassen(lhs: a11 + a22,   rhs: b11 + b22, minimumSize: minimumSize)
+//        let m2 = strassen(lhs: a12 + a22,   rhs: b11,       minimumSize: minimumSize)
+//        let m3 = strassen(lhs: a11,         rhs: b12 - b22, minimumSize: minimumSize)
+//        let m4 = strassen(lhs: a22,         rhs: b21 - b11, minimumSize: minimumSize)
+//        let m5 = strassen(lhs: a11 + a12,   rhs: b22,       minimumSize: minimumSize)
+//        let m6 = strassen(lhs: a21 - a11,   rhs: b11 + b12, minimumSize: minimumSize)
+//        let m7 = strassen(lhs: a12 - a22,   rhs: b21 + b22, minimumSize: minimumSize)
+        
+        let m1 = (a11 + a22).defaultRightMultiply(onto: b11 + b22)
+        let m2 = (a12 + a22).defaultRightMultiply(onto: b11)
+        let m3 = (a11).defaultRightMultiply(onto: b12 - b22)
+        let m4 = (a22).defaultRightMultiply(onto: b21 - b11)
+        let m5 = (a11 + a12).defaultRightMultiply(onto: b22)
+        let m6 = (a21 - a11).defaultRightMultiply(onto: b11 + b12)
+        let m7 = (a12 - a22).defaultRightMultiply(onto: b21 + b22)
         
         var product = Matrix(rows: n, cols: n)
         
+        print(product)
+        
         product[0..<(n / 2), 0..<(n / 2)] = m1 + m4 - m5 + m7
-        product[(n / 2)..<n, 0..<(n / 2)] = m3 + m5
-        product[0..<(n / 2), (n / 2)..<n] = m2 + m4
+        product[0..<(n / 2), (n / 2)..<n] = m3 + m5
+        
+        // these don't work?
+        product[(n / 2)..<n, 0..<(n / 2)] = m2 + m4
         product[(n / 2)..<n, (n / 2)..<n] = m1 - m2 + m3 + m6
+        
         
         return product
         
