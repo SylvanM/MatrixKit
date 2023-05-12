@@ -11,14 +11,9 @@ import Accelerate
 /**
  * A matrix with entries in a field
  */
-public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
+public struct Matrix<Element: FieldElement>: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
     
     // MARK: - Typealiases
-    
-    /**
-     * The element of this matrix, equivalent to `Double`.
-     */
-    public typealias Element = Double
     
     public typealias ArrayLiteralElement = [Element]
     
@@ -47,7 +42,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * Creates an empty matrix representing `[0]`
      */
     public init() {
-        self.flatmap = [0]
+        self.flatmap = [.zero]
         self.colCount = 1
         self.rowCount = 1
     }
@@ -69,7 +64,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * Creates a matrix filled of specified dimensions filled with zeros
      */
     public init(rows: Int, cols: Int) {
-        flatmap = [Element](repeating: 0, count: rows * cols)
+        flatmap = [Element](repeating: .zero, count: rows * cols)
         rowCount = rows
         colCount = cols
     }
@@ -199,7 +194,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * - Precondition: `rows >= 1 && cols >= 1`
      */
     public static func zero(rows: Int, cols: Int) -> Matrix {
-        Matrix(flatmap: [Element](repeating: Element.zero, count: rows * cols), cols: cols)
+        Matrix(flatmap: [Element](repeating: .zero, count: rows * cols), cols: cols)
     }
     
     // MARK: Encoding/Decoding
@@ -313,7 +308,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * This matrix in rowwise array form
      */
     public var rows: [[Element]] {
-        let rowPattern = [[Element]](repeating: [Element](repeating: 0, count: colCount), count: rowCount)
+        let rowPattern = [[Element]](repeating: [Element](repeating: .zero, count: colCount), count: rowCount)
         return flatmap.overlay(onto: rowPattern)
     }
     
@@ -321,7 +316,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * This matrix in column-wise array form
      */
     public var columns: [[Element]] {
-        var colArray = [[Element]](repeating: [Element](repeating: 0, count: rowCount), count: colCount)
+        var colArray = [[Element]](repeating: [Element](repeating: .zero, count: rowCount), count: colCount)
         
         for i in 0..<colCount {
             colArray[i] = self[col: i]
