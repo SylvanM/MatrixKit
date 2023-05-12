@@ -9,7 +9,7 @@ import Foundation
 import Accelerate
 
 /**
- * A matrix
+ * A matrix with entries in a field
  */
 public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
     
