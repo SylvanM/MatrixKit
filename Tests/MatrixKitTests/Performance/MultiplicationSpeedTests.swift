@@ -37,17 +37,5 @@ final class MultiplicationSpeedTests: XCTestCase {
             print(k)
         }
     }
-    
-    func testStrassenSpeed() {
-        for k in 0..<32 {
-            let n = Int(pow(2, Double(k)))
-            
-            let a = Matrix.random(rows: n, cols: n)
-            let b = Matrix.random(rows: n, cols: n)
-            
-            let strassen = Matrix.strassen(lhs: a, rhs: b, minimumSize: 64)
-            print(k)
-        }
-    }
 
 }

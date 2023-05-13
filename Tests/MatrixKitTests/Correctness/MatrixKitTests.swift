@@ -6,7 +6,7 @@ final class MatrixKitTests: XCTestCase {
     
     let floatingPointAccuracy: Double = 0.0000001
     
-    public static func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix {
+    public static func makeRandomMatrix(rows: Int, cols: Int, range: ClosedRange<Double> = 0...1) -> Matrix<Double> {
         let flatmap = [Double](repeating: 0, count: rows * cols).lazy.map { _ in Double.random(in: range) }
         return Matrix(flatmap: [Double](flatmap), cols: cols)
     }
@@ -15,7 +15,7 @@ final class MatrixKitTests: XCTestCase {
         for _ in 1...100 {
             let matrix = MatrixKitTests.makeRandomMatrix(rows: Int.random(in: 1...100), cols: Int.random(in: 1...100))
             let buffer = matrix.encodedDataBuffer
-            let decoded = Matrix(buffer: buffer)
+            let decoded = Matrix<Double>(buffer: buffer)
             XCTAssertEqual(matrix, decoded)
         }
     }
@@ -72,7 +72,7 @@ final class MatrixKitTests: XCTestCase {
     
     func testBasicArithmetic() {
         
-        var identity = Matrix.identity(forDim: 4)
+        var identity = Matrix<Double>.identity(forDim: 4)
         
         identity *= 5
         
@@ -156,10 +156,10 @@ final class MatrixKitTests: XCTestCase {
             
             let rows = Int.random(in: 10...100)
             let cols = Int.random(in: 10...100)
-            let idenL = Matrix.identity(forDim: rows)
-            let idenR = Matrix.identity(forDim: cols)
-            let zeroL = Matrix(rows: Int.random(in: 10...100), cols: rows)
-            let zeroR = Matrix(rows: cols, cols: Int.random(in: 10...100))
+            let idenL = Matrix<Double>.identity(forDim: rows)
+            let idenR = Matrix<Double>.identity(forDim: cols)
+            let zeroL = Matrix<Double>(rows: Int.random(in: 10...100), cols: rows)
+            let zeroR = Matrix<Double>(rows: cols, cols: Int.random(in: 10...100))
             let matrix = MatrixKitTests.makeRandomMatrix(rows: rows, cols: cols)
             
             XCTAssertEqual(idenL * matrix, matrix)
@@ -201,7 +201,7 @@ final class MatrixKitTests: XCTestCase {
         
         // identity is full rank
         for dim in 1...100 {
-            XCTAssertEqual(Matrix.identity(forDim: dim).rank, dim)
+            XCTAssertEqual(Matrix<Double>.identity(forDim: dim).rank, dim)
         }
         
         // use some known-value tests that I got from https://www.cse.cuhk.edu.hk/~taoyf/course/1410/19-spr/ex/ex-matrix-rank-sol.pdf
@@ -315,15 +315,15 @@ final class MatrixKitTests: XCTestCase {
         
         // Make sure that multiplying by the inverse gives an identity element
         for _ in 1...100 {
-            var matrix: Matrix
+            var matrix: Matrix<Double>
             let size = Int.random(in: 1...10)
             
             repeat {
                 matrix = MatrixKitTests.makeRandomMatrix(rows: size, cols: size)
             } while !matrix.isInvertible
             
-            XCTAssertLessThan(Matrix.identity(forDim: size).distanceSquared(from: matrix.inverse * matrix), floatingPointAccuracy)
-            XCTAssertLessThan(Matrix.identity(forDim: size).distanceSquared(from: matrix * matrix.inverse), floatingPointAccuracy)
+            XCTAssertLessThan(Matrix<Double>.identity(forDim: size).distanceSquared(from: matrix.inverse * matrix), floatingPointAccuracy)
+            XCTAssertLessThan(Matrix<Double>.identity(forDim: size).distanceSquared(from: matrix * matrix.inverse), floatingPointAccuracy)
             
                         
         }
@@ -336,7 +336,7 @@ final class MatrixKitTests: XCTestCase {
     
     func testRowColSums() throws {
         
-        let iden = Matrix.identity(forDim: 70) // arbitrary dimension
+        let iden = Matrix<Double>.identity(forDim: 70) // arbitrary dimension
         XCTAssertTrue(iden.rowSum().allSatisfy { $0 == 1 })
         
         let a: Matrix = [

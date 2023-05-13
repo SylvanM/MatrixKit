@@ -214,7 +214,7 @@ fileprivate extension Matrix {
         if startingRow == rowCount - 1 { return .upper }
         
         for r in (startingRow + 1)..<rowCount {
-            if self[r, startingRow] != 0 {
+            if self[r, startingRow] != .zero {
                 return .none
             }
         }
@@ -227,7 +227,7 @@ fileprivate extension Matrix {
         if startingRow == rowCount - 1 { return .lower }
         
         for c in (startingRow + 1)..<colCount {
-            if self[startingRow, c] != 0 {
+            if self[startingRow, c] != .zero {
                 return .none
             }
         }
@@ -242,13 +242,13 @@ fileprivate extension Matrix {
         if startingRow == rowCount - 1 { return .diagonal }
         
         for c in (startingRow + 1)..<colCount {
-            if self[startingRow, c] != 0 {
+            if self[startingRow, c] != .zero {
                 return isUpperTriangular(startingRow: startingRow)
             }
         }
         
         for r in (startingRow + 1)..<rowCount {
-            if self[r, startingRow] != 0 {
+            if self[r, startingRow] != .zero {
                 return isLowerTriangular(startingRow: startingRow)
             }
         }
@@ -280,13 +280,13 @@ fileprivate extension Matrix {
         
         if startingRow != rowCount - 1 {
             for row in (startingRow + 1)..<rowCount {
-                if self[row, startingCol] != 0 {
+                if self[row, startingCol] != .zero {
                     return false
                 }
             }
         }
         
-        if pivotEntry == 0 {
+        if pivotEntry == .zero {
             // the rest of this column is all zeros, so just look at the next column over.
             
             pivotsRef?.pointee[startingRow] = -1
@@ -336,7 +336,7 @@ fileprivate extension Matrix {
             
             if startingRow < rowCount - 1 {
                 for row in startingRow..<rowCount {
-                    guard self[row, startingCol] == 0 else { return false }
+                    guard self[row, startingCol] == .zero else { return false }
                 }
             }
             
@@ -345,12 +345,12 @@ fileprivate extension Matrix {
         }
         
         // make sure this pivot entry is 1!
-        guard self[thisPivotLocation, startingCol] == 1 else { return false }
+        guard self[thisPivotLocation, startingCol] == .one else { return false }
         
         // make sure everything above this entry is zero.
         if thisPivotLocation > 0 {
             for row in 0..<thisPivotLocation {
-                guard self[row, startingCol] == 0 else { return false }
+                guard self[row, startingCol] == .zero else { return false }
             }
         }
         
@@ -377,36 +377,12 @@ fileprivate extension Matrix {
         // if at any point this is a matrix that can be converted to a SIMD type, USE THAT!
         
         switch colCount {
-        case 4:
-            
-            return simd_double4x4(
-                simd_double4(flatmap[0], flatmap[4], flatmap[8], flatmap[12]),
-                simd_double4(flatmap[1], flatmap[5], flatmap[9], flatmap[13]),
-                simd_double4(flatmap[2], flatmap[6], flatmap[10], flatmap[14]),
-                simd_double4(flatmap[3], flatmap[7], flatmap[11], flatmap[15])
-            ).determinant
-            
-        case 3:
-            
-            return simd_double3x3(
-                simd_double3(flatmap[0], flatmap[3], flatmap[6]),
-                simd_double3(flatmap[1], flatmap[4], flatmap[7]),
-                simd_double3(flatmap[2], flatmap[5], flatmap[8])
-            ).determinant
-
-        case 2:
-            
-            return simd_double2x2(
-                simd_double2(flatmap[0], flatmap[2]),
-                simd_double2(flatmap[1], flatmap[3])
-            ).determinant
-            
         case 1: return flatmap[0]
             
         default: // the recursive case!
             
             // Idea: Maybe search and see if there's a particular row/column that has a lot of zeros, and do co-factor expansion along that?
-            var sum: Element = 0
+            var sum = Element.zero
             
             for i in 0..<colCount {
                 var scalar = self[0, i]

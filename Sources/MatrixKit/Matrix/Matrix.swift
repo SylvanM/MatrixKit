@@ -180,7 +180,7 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
     public static func identity(forDim dim: Int) -> Matrix {
         var iden = Matrix(rows: dim, cols: dim)
         for i in 0..<dim {
-            iden[i, i] = 1
+            iden[i, i] = .one
         }
         return iden
     }
@@ -240,21 +240,7 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
         rowCount == colCount
     }
     
-    /**
-     * The magnitude of this matrix
-     */
-    public var magnitude: Double {
-        computeMagnitude()
-    }
     
-    /**
-     * A scale of this matrix with a magnitude of 1
-     */
-    public var normalized: Matrix {
-        var norm = self
-        norm.normalize()
-        return norm
-    }
     
     /**
      * A matrix of the same dimensions as this one, but with all elements set to zero
@@ -265,12 +251,7 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
         return new
     }
     
-    /**
-     * Computes the matnitude squared of this matrix
-     */
-    public var magnitudeSquared: Double {
-        computeMagnitudeSquared()
-    }
+    
     
     /**
      * Whether or not this represents a vector
@@ -332,7 +313,13 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
         if isVector { return Matrix(flatmap) }
         
         var trans = Matrix(rows: colCount, cols: rowCount)
-        computeTranspose(result: &trans)
+        
+        for r in 0..<trans.rowCount {
+            for c in 0..<trans.colCount {
+                trans[r, c] = self[c, r]
+            }
+        }
+        
         return trans
     }
     

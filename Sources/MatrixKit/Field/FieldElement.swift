@@ -10,7 +10,7 @@ import Foundation
 /**
  * This describes the requirements for any element of a field, usable for the entries of a matrix
  */
-public protocol FieldElement: Numeric, CustomStringConvertible {
+public protocol FieldElement: Equatable, CustomStringConvertible {
     
     // MARK: Properties
     
@@ -68,8 +68,14 @@ public protocol FieldElement: Numeric, CustomStringConvertible {
  */
 public extension FieldElement {
     
+    // MARK: Implied Definitions
+    
     static func - (lhs: Self, rhs: Self) -> Self {
         lhs + (-rhs)
+    }
+    
+    static func / (lhs: Self, rhs: Self) -> Self {
+        lhs * (rhs.inverse)
     }
     
     func pow(_ power: Int) -> Self {
@@ -80,6 +86,24 @@ public extension FieldElement {
         }
         
         return out
+    }
+    
+    // MARK: Mutating Definitions
+    
+    static func += (lhs: inout Self, rhs: Self) {
+        lhs = lhs + rhs
+    }
+     
+    static func -= (lhs: inout Self, rhs: Self) {
+        lhs = lhs - rhs
+    }
+    
+    static func *= (lhs: inout Self, rhs: Self) {
+        lhs = lhs * rhs
+    }
+    
+    static func /= (lhs: inout Self, rhs: Self) {
+        lhs = lhs / rhs
     }
     
 }

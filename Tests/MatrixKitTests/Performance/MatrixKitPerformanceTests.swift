@@ -50,7 +50,7 @@ class MatrixKitPerformanceTests: XCTestCase {
         let matrixA = MatrixKitTests.makeRandomMatrix(rows: 2000, cols: 100000)
         let matrixB = MatrixKitTests.makeRandomMatrix(rows: 100000, cols: 2000)
         
-        var product = Matrix()
+        var product = Matrix<Double>()
         
         print("Starting computation...")
         
@@ -67,7 +67,7 @@ class MatrixKitPerformanceTests: XCTestCase {
             for r in 2...10 {
                 for c in 2...10 {
                     var matrix = MatrixKitTests.makeRandomMatrix(rows: r, cols: c, range: -10...10)
-                    var op: Matrix.ElementaryOperation
+                    var op: Matrix<Double>.ElementaryOperation
                     
                     let opcode = Int.random(in: 1...3)
                     

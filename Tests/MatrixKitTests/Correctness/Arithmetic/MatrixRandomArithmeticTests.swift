@@ -56,9 +56,9 @@ class MatrixRandomArithmeticTests: XCTestCase {
             let n = Int.random(in: 1...100)
             let m = Int.random(in: 1...100)
 
-            let a = Matrix.Element.random(in: range)
-            let b = Matrix.random(rows: n, cols: m, range: range)
-            let c = Matrix.random(rows: n, cols: m, range: range)
+            let a = Matrix<Double>.Element.random(in: range)
+            let b = Matrix<Double>.random(rows: n, cols: m, range: range)
+            let c = Matrix<Double>.random(rows: n, cols: m, range: range)
 
             let e1 = a * (b + c)
             let e2 = (a * b) + (a * c)
