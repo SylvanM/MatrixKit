@@ -9,7 +9,20 @@
 import Foundation
 import Accelerate
 
+/**
+ * A matrix with double-legth floating point entries
+ */
+public typealias DMatrix = Matrix<Double>
+
 public extension Matrix where Element == Double {
+    
+    public static func staticTestType() {
+        print("Using double")
+    }
+    
+    public func testType() {
+        print("Using double")
+    }
     
     /**
      * The magnitude of this matrix

@@ -129,6 +129,9 @@ public extension Matrix {
      * - Returns: The matrix product `lhs * self`
      */
     func leftMultiply(by lhs: Matrix) -> Matrix {
+        print("using BAD mult")
+        
+        
         assert(lhs.colCount == self.rowCount, "Invalid dimensions for matrix multiplcation")
         
         var product = Matrix(rows: lhs.rowCount, cols: self.colCount)

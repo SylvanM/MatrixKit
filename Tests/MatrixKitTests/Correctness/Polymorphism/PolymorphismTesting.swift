@@ -73,21 +73,15 @@ final class PolymorphismTesting: XCTestCase {
     }
 
     func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-        let rand = ZM(rows: 3, cols: 3) { _,_  in
+        
+        let zmat = ZM(rows: 3, cols: 3) { _,_  in
             ZM5(integerLiteral: Int.random(in: 0..<5))
         }
+
+        let dmat = DMatrix.random(rows: 3, cols: 3)
         
-        print(rand)
-        print(rand + rand)
-        
-        print(rand.reducedRowEchelonForm)
-        print(rand.inverse)
-        print(rand.inverse * rand)
+        print(zmat.determinant)
+        print(dmat.determinant)
     }
 
     func testPerformanceExample() throws {

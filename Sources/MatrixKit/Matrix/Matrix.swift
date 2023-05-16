@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Matrix.swift
 //  
 //
 //  Created by Sylvan Martin on 6/15/22.
@@ -12,6 +12,14 @@ import Accelerate
  * A matrix with entries in a field
  */
 public struct Matrix<Element: FieldElement>: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
+    
+    public static func staticTestType() {
+        print("Using generic")
+    }
+    
+    public func testType() {
+        print("Using generic")
+    }
     
     // MARK: - Typealiases
     

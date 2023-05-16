@@ -9,7 +9,7 @@ import Foundation
  
 extension Matrix where Element == Double {
     
-    private static func factorial(_ x: Double) -> Double {
+    fileprivate static func factorial(_ x: Double) -> Double {
         return 0
     }
     
