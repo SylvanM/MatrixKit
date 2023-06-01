@@ -25,9 +25,7 @@ extension Matrix where Element == Double {
         var sum = zero(rows: m.rowCount, cols: m.colCount)
         
         for n in 0...precision {
-            sum.add(
-                (m ** n).scaled(by: 1 / factorial(Double(n)))
-            )
+            sum += (m.pow(n)) * (1 / factorial(Double(n)))
         }
         
         return sum
@@ -53,8 +51,8 @@ extension Matrix where Element == Float {
         var sum = zero(rows: m.rowCount, cols: m.colCount)
         
         for n in 0...precision {
-            sum.add(
-                (m ** n).scaled(by: 1 / factorial(Float(n)))
+            sum += (
+                (m.pow(n)) * (1 / factorial(Float(n)))
             )
         }
         

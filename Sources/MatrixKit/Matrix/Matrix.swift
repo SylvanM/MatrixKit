@@ -248,8 +248,6 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
         rowCount == colCount
     }
     
-    
-    
     /**
      * A matrix of the same dimensions as this one, but with all elements set to zero
      */
@@ -258,8 +256,6 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
         new.setToZero()
         return new
     }
-    
-    
     
     /**
      * Whether or not this represents a vector

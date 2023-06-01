@@ -11,20 +11,22 @@ import simd
 
 public extension Matrix {
     
-    // MARK: - Comparisons
+    // MARK: Advanced Operations
     
     /**
-     * Returns `true` if this matrix is equivalent to another matrix.
+     * Raises a square matrix `self` to an integer power `p`
+     *
+     * - Precondition: `self.isSquare && p >= 0`
+     *
+     * - Returns: `self` raised to `p`
      */
-    func equals(_ other: Matrix) -> Bool {
-        self.colCount == other.colCount && self.flatmap == other.flatmap
-    }
-    
-    /**
-     * Returns `true` if `other` can be obtained by applying row operations to `self`
-     */
-    func isRowEquivalent(to other: Matrix) -> Bool {
-        self.rank == other.rank && (self.colCount, self.rowCount) == (other.colCount, other.colCount)
+    func pow(_ p: Int) -> Matrix {
+        // TODO: Make this WAYYY better, this is a very temporary solution
+        if p == 0 {
+            return Matrix.identity(forDim: self.rowCount)
+        }
+        
+        return self * self.pow(p - 1)
     }
     
     /**
@@ -33,140 +35,6 @@ public extension Matrix {
     @inlinable
     func hasSameDimensions(as other: Matrix) -> Bool {
         self.rowCount == other.rowCount && self.colCount == other.colCount
-    }
-    
-    // MARK: Matrix Operations
-    
-    /**
-     * Scales every element of this matrix by a scalar, in place.
-     *
-     * - Parameter scalar: `Element` by which to scale every element of this matrix.
-     */
-    mutating func scale(by scalar: Element) {
-        for i in 0..<flatmap.count {
-            flatmap[i] *= scalar
-        }
-    }
-    
-    /**
-     * The result of scaling this matrix by a scalar, out of place.
-     *
-     * - Parameter scalar: `Double` by which to scale every element of this matrix
-     * - Returns: The result of scaling this matrix by a scalar.
-     */
-    func scaled(by scalar: Element) -> Matrix {
-        var out = self
-        out.scale(by: scalar)
-        return out
-    }
-    
-    /**
-     * Adds every element of another matrix to the corresponding element of this matrix, in place.
-     *
-     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
-     * - Parameter other: `Matrix` to add.
-     */
-    mutating func add(_ other: Matrix) {
-        assert(hasSameDimensions(as: other), "Cannot add matrices of different dimensions")
-        
-        for i in 0..<flatmap.count {
-            flatmap[i] += other.flatmap[i]
-        }
-    }
-    
-    /**
-     * Subtracts every element of another matrix to the corresponding element of this matrix, in place.
-     *
-     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
-     * - Parameter other: `Matrix` to subtract.
-     */
-    mutating func subtract(_ other: Matrix) {
-        assert(hasSameDimensions(as: other), "Cannot subtract matrices of different dimensions")
-        
-        for i in 0..<flatmap.count {
-            flatmap[i] -= other.flatmap[i]
-        }
-    }
-    
-    /**
-     * Subtracts the values of another matrix from this matrix, out of place
-     *
-     * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
-     * - Parameter other: `Matrix` to subtract.
-     * - Returns: The difference of this matrix and `other`.
-     */
-    func difference(subtracting other: Matrix) -> Matrix {
-        assert(hasSameDimensions(as: other), "Cannot subtract matrices of different dimensions")
-        
-        var out = self
-        out.subtract(other)
-        return out
-    }
-    
-    /**
-     * Adds the values of another matrix to this matrix, out of place.
-     *
-     * - Precondition: `self.colCount == other.colCount && self.rowCount == other.rowCount`
-     * - Parameter other: `Matrix` to add
-     * - Returns: The sum of `self` and `other`.
-     */
-    func sum(adding other: Matrix) -> Matrix {
-        assert(hasSameDimensions(as: other), "Cannot add matrices of different dimensions")
-        
-        var out = self
-        out.add(other)
-        return out
-    }
-    
-    /**
-     * Multiplies this matrix by another matrix on the left.
-     *
-     * This performs the matrix multiplication `lhs * self`.
-     *
-     * - Precondition: `lhs.colCount == self.rowCount`
-     *
-     * - Parameter lhs: `Matrix` by which to multiply
-     * - Returns: The matrix product `lhs * self`
-     */
-    func leftMultiply(by lhs: Matrix) -> Matrix {
-        print("using BAD mult")
-        
-        
-        assert(lhs.colCount == self.rowCount, "Invalid dimensions for matrix multiplcation")
-        
-        var product = Matrix(rows: lhs.rowCount, cols: self.colCount)
-        
-        for r in 0..<product.rowCount {
-            for c in 0..<product.colCount {
-                product[r, c] = lhs[row: r].dotProduct(with: self[col: c])
-            }
-        }
-        
-        return product
-    }
-    
-    /**
-     * Multiplies this another by this matrix.
-     *
-     * This performs the matrix multiplication `self * rhs`.
-     *
-     * - Precondition: `self.colCount == rhs.rowCount`
-     *
-     * - Parameter rhs: `Matrix` to multiply by `self`
-     * - Returns: The matrix product `self * rhs`
-     */
-    func rightMultiply(onto rhs: Matrix) -> Matrix {
-        assert(self.colCount == rhs.rowCount, "Invalid dimensions for matrix multiplcation")
-        
-        var product = Matrix(rows: self.rowCount, cols: rhs.colCount)
-        
-        for r in 0..<product.rowCount {
-            for c in 0..<product.colCount {
-                product[r, c] = self[row: r].dotProduct(with: rhs[col: c])
-            }
-        }
-        
-        return product
     }
     
     /**
@@ -208,8 +76,6 @@ public extension Matrix {
     }
     
     // MARK: - Row Operations and Guassian Elimination
-    
-    #warning("These need optimizing")
     
     /**
      * Applies a row operation on this matrix

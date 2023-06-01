@@ -16,14 +16,6 @@ public typealias DMatrix = Matrix<Double>
 
 public extension Matrix where Element == Double {
     
-    public static func staticTestType() {
-        print("Using double")
-    }
-    
-    public func testType() {
-        print("Using double")
-    }
-    
     /**
      * The magnitude of this matrix
      */
@@ -61,6 +53,69 @@ public extension Matrix where Element == Double {
         }
         
         return trans
+    }
+    
+    // MARK: Methods
+    
+    /**
+     * Computes the distance squared between two matrices as if their flat maps were vectors
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     * - Parameter other: A matrix to compute the distance squared from
+     * - Returns: A nonnegative number representing how far off these matrices are from each other, squared
+     */
+    func distanceSquared(from other: Matrix) -> Element {
+        assert(hasSameDimensions(as: other), "Cannot find distance between matrices of different dimensions")
+        var ds: Double = 0
+        
+        other.withBaseAddress { otherBaseAddress in
+            withBaseAddress { baseAddress in
+                vDSP_distancesqD(baseAddress, 1, otherBaseAddress, 1, &ds, UInt(count))
+            }
+        }
+        
+        return ds
+    }
+    
+    /**
+     * Computes the distance between two matrices as if their flat maps were vectors
+     *
+     * - Precondition: `self.rowCount == other.rowCount && self.colCount == other.colCount`
+     * - Parameter other: A matrix to compute the distance from
+     * - Returns: A nonnegative number representing how far off these matrices are from each other
+     */
+    func distance(from other: Matrix) -> Element {
+        sqrt(distanceSquared(from: other))
+    }
+    
+    /**
+     * Scales every this matrix by the multiplicative inverse of `self.magnitude`, so that the new magnitude is 1.
+     */
+    mutating func normalize() {
+        if magnitude.isZero { return }
+        self *= 1 / magnitude
+    }
+    
+}
+
+fileprivate extension Matrix where Element == Double {
+    
+    /**
+     * Computes the magnitude of this matrix
+     */
+    func computeMagnitude() -> Double {
+        sqrt(computeMagnitudeSquared())
+    }
+    
+    /**
+     * Computes the magnitude squared of this matrix. That is, the sum of the squares of all elements of the matrix
+     */
+    internal func computeMagnitudeSquared() -> Double {
+        withBaseAddress { baseAddress in
+            // TODO: Right now this can only take a 32 bit integer as the size, so eventally might have to
+            // split the computation up for larger vectors.
+            cblas_dnrm2(Int32(count), baseAddress, 1)
+        }
     }
     
 }

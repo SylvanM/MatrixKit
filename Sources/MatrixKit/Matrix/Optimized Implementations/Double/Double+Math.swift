@@ -10,6 +10,14 @@ import simd
 
 public extension Matrix where Element == Double {
     
+    var determinant: Double {
+        Matrix<Double>.computeDeterminant(self)
+    }
+    
+}
+
+fileprivate extension Matrix where Element == Double {
+    
     static func computeDeterminant(_ matrix: Matrix) -> Element {
         print("Using DOUBLE det")
         // if at any point this is a matrix that can be converted to a SIMD type, USE THAT!

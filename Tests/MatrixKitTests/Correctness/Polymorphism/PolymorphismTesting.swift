@@ -9,7 +9,7 @@ import XCTest
 import MatrixKit
 
 /**
- * The integers mod 13
+ * The integers mod 5
  */
 struct ZM5: FieldElement, ExpressibleByIntegerLiteral {
     
@@ -80,8 +80,8 @@ final class PolymorphismTesting: XCTestCase {
 
         let dmat = DMatrix.random(rows: 3, cols: 3)
         
-        print(zmat.determinant)
-        print(dmat.determinant)
+        print(zmat * zmat)
+        print(dmat * dmat)
     }
 
     func testPerformanceExample() throws {

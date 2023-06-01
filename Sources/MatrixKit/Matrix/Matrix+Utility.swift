@@ -13,8 +13,6 @@ public extension Matrix {
     
     // MARK: Creation
     
-    
-    
     /**
      * Decodes a matrix from the base address of a buffer of data that encodes this matrix, and updates the base address to point to the next
      * byte after this buffer

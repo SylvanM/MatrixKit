@@ -33,7 +33,7 @@ final class MultiplicationSpeedTests: XCTestCase {
             let a = Matrix.random(rows: n, cols: n)
             let b = Matrix.random(rows: n, cols: n)
             
-            _ = a.rightMultiply(onto: b)
+            _ = a * b
             print(k)
         }
     }

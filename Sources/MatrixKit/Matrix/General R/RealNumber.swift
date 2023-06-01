@@ -12,6 +12,8 @@ import Foundation
  */
 public protocol RealNumber {
     
-    public 
+    var asDouble: Double { get }
+    
+    init(fromDouble: Double)
     
 }
