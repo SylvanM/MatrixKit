@@ -75,7 +75,7 @@ public extension FieldElement {
     }
     
     static func / (lhs: Self, rhs: Self) -> Self {
-        lhs * (rhs.inverse)
+        return lhs * (rhs.inverse)
     }
     
     func pow(_ power: Int) -> Self {
@@ -108,7 +108,7 @@ public extension FieldElement {
     
 }
 
-// Float and Double should, by default, conform to this type!
+// Float and Double should, almost by default, conform to this type!
 
 extension Float: FieldElement {
     public static var one: Float { 1 }

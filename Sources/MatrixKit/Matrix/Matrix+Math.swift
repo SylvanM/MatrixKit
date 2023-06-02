@@ -79,9 +79,7 @@ public extension Matrix {
      * - Precondition: `isSquare` and `colCount >= 1`
      */
     var determinant: Element {
-        print(Element.self)
-        
-        return Matrix<Element>.computeDeterminant(self)
+        Matrix<Element>.computeDeterminant(self)
     }
     
     /**

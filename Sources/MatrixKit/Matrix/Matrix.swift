@@ -13,14 +13,6 @@ import Accelerate
  */
 public struct Matrix<Element: FieldElement>: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
     
-    public static func staticTestType() {
-        print("Using generic")
-    }
-    
-    public func testType() {
-        print("Using generic")
-    }
-    
     // MARK: - Typealiases
     
     public typealias ArrayLiteralElement = [Element]

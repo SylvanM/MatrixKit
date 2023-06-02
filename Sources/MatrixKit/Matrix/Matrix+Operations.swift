@@ -128,15 +128,15 @@ public extension Matrix {
      */
     mutating func apply(columnOperation: ElementaryOperation) {
         switch columnOperation {
-            case .scale(let col, var scalar):
-                assert(col < colCount, "Column index out of bounds")
-                scale(col: col, by: scalar)
-            case .swap(let colA, let colB):
-                assert(colA < colCount && colB < colCount, "Column index out of bounds")
-                swap(col: colA, with: colB)
-            case .add(var scalar, let col, let toCol):
-                assert(col < colCount, "Column index out of bounds")
-                add(col: col, scaledBy: scalar, toCol: toCol)
+        case .scale(let col, let scalar):
+            assert(col < colCount, "Column index out of bounds")
+            scale(col: col, by: scalar)
+        case .swap(let colA, let colB):
+            assert(colA < colCount && colB < colCount, "Column index out of bounds")
+            swap(col: colA, with: colB)
+        case .add(let scalar, let col, let toCol):
+            assert(col < colCount, "Column index out of bounds")
+            add(col: col, scaledBy: scalar, toCol: toCol)
         }
     }
     
