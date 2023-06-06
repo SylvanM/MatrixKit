@@ -30,6 +30,7 @@ class MatrixKitTests<Element: TestableFieldElement> : XCTest, MKTestSuite {
     override func run() {
         InitializerTests<Element>().run()
         OperatorTests<Element>().run()
+        MathPropertiesTest<Element>().run()
     }
 
 }

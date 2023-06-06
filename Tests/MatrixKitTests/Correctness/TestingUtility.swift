@@ -9,8 +9,6 @@
 import Foundation
 import MatrixKit
 
-
-
 // We want to be able to generate elements from this field for testing!
 protocol TestableFieldElement: FieldElement {
     
@@ -174,5 +172,18 @@ struct SillyDouble: TestableFieldElement, ExpressibleByFloatLiteral {
     static func == (lhs: SillyDouble, rhs: SillyDouble) -> Bool {
         (lhs - rhs).value.magnitude < 0.00001
     }
+    
+}
+
+extension Double: TestableFieldElement {
+    
+    static func == (lhs: Double, rhs: Double) -> Bool {
+        lhs - rhs < 0.00001
+    }
+    
+    static func random() -> Double {
+        Double.random(in: -10...10)
+    }
+    
     
 }

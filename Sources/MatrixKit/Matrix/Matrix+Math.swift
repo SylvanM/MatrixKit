@@ -46,6 +46,13 @@ public extension Matrix {
     // MARK: - Mathematical Properties
     
     /**
+     * Whether or not this matrix is all zero
+     */
+    var isZero: Bool {
+        allSatisfy { $0 == .zero }
+    }
+    
+    /**
      * The shape of this matrix, whether it is diagonal, lower triangular, or upper triangular
      */
     var triangularity: Triangularity {
@@ -89,7 +96,11 @@ public extension Matrix {
      * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form
      */
     var rowEchelonForm: Matrix {
-        // TODO: Maybe add a check to see if this is already in row echelon form?
+        // TODO: Speed check this to see if this is really worth checking
+
+        if isRowEchelonForm {
+            return self
+        }
         
         var ref = self
         Matrix.rowEchelon(on: &ref)
