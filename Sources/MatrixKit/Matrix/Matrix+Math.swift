@@ -46,6 +46,13 @@ public extension Matrix {
     // MARK: - Mathematical Properties
     
     /**
+     * Whether or not this matrix is all zero
+     */
+    var isZero: Bool {
+        allSatisfy { $0 == .zero }
+    }
+    
+    /**
      * The shape of this matrix, whether it is diagonal, lower triangular, or upper triangular
      */
     var triangularity: Triangularity {
@@ -79,7 +86,7 @@ public extension Matrix {
      * - Precondition: `isSquare` and `colCount >= 1`
      */
     var determinant: Element {
-        computeDeterminant()
+        Matrix<Element>.computeDeterminant(self)
     }
     
     /**
@@ -89,7 +96,11 @@ public extension Matrix {
      * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form
      */
     var rowEchelonForm: Matrix {
-        // TODO: Maybe add a check to see if this is already in row echelon form?
+        // TODO: Speed check this to see if this is really worth checking
+
+        if isRowEchelonForm {
+            return self
+        }
         
         var ref = self
         Matrix.rowEchelon(on: &ref)
@@ -169,25 +180,6 @@ public extension Matrix {
         computeKernel()
     }
     
-    // MARK: Advanced Operations
-    
-    /**
-     * Raises a square matrix `m` to an integer power `p`
-     *
-     * - Precondition: `m.isSquare && p >= 0`
-     *
-     * - Returns: `m` raised to `p`
-     */
-    static func pow(_ m: Matrix, _ p: Int) -> Matrix {
-        // TODO: Make this WAYYY better, this is a very temporary solution
-        if p == 0 {
-            return Matrix.identity(forDim: m.rowCount)
-        }
-        
-        return m * pow(m, p - 1)
-    }
-    
-    
     // MARK: - Eigenvalues
     
     /**
@@ -214,7 +206,7 @@ fileprivate extension Matrix {
         if startingRow == rowCount - 1 { return .upper }
         
         for r in (startingRow + 1)..<rowCount {
-            if self[r, startingRow] != 0 {
+            if self[r, startingRow] != .zero {
                 return .none
             }
         }
@@ -227,7 +219,7 @@ fileprivate extension Matrix {
         if startingRow == rowCount - 1 { return .lower }
         
         for c in (startingRow + 1)..<colCount {
-            if self[startingRow, c] != 0 {
+            if self[startingRow, c] != .zero {
                 return .none
             }
         }
@@ -242,13 +234,13 @@ fileprivate extension Matrix {
         if startingRow == rowCount - 1 { return .diagonal }
         
         for c in (startingRow + 1)..<colCount {
-            if self[startingRow, c] != 0 {
+            if self[startingRow, c] != .zero {
                 return isUpperTriangular(startingRow: startingRow)
             }
         }
         
         for r in (startingRow + 1)..<rowCount {
-            if self[r, startingRow] != 0 {
+            if self[r, startingRow] != .zero {
                 return isLowerTriangular(startingRow: startingRow)
             }
         }
@@ -270,7 +262,7 @@ fileprivate extension Matrix {
      *
      * - Precondition: If this function is called non-recursively, it *must* not be given any parameters other than the default parameter values.
      */
-    func isRowEchelonForm(startingRow: Int = 0, startingCol: Int = 0, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) -> Bool {
+    private func isRowEchelonForm(startingRow: Int = 0, startingCol: Int = 0, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) -> Bool {
         
         if startingRow >= rowCount || startingCol >= colCount {
             return true
@@ -280,13 +272,13 @@ fileprivate extension Matrix {
         
         if startingRow != rowCount - 1 {
             for row in (startingRow + 1)..<rowCount {
-                if self[row, startingCol] != 0 {
+                if self[row, startingCol] != .zero {
                     return false
                 }
             }
         }
         
-        if pivotEntry == 0 {
+        if pivotEntry == .zero {
             // the rest of this column is all zeros, so just look at the next column over.
             
             pivotsRef?.pointee[startingRow] = -1
@@ -304,7 +296,7 @@ fileprivate extension Matrix {
      * - Precondition: If this function is called non-recursively, it *must* not be given any parameters other than the default parameter values.
      * - Precondition: `pivotLocations` is only an empty array on this function's first call. Otherwise, it contains a list of pivot locations.
      */
-    func isReducedRowEchelonForm(startingRow: Int = 0, startingCol: Int = 0, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) -> Bool {
+    private func isReducedRowEchelonForm(startingRow: Int = 0, startingCol: Int = 0, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) -> Bool {
         
         // this could probably be simplified way more by just looping through pivotsRef.pointee,
         // then based off whether we see a -1 or not, check either the whole column or just below the pivot.
@@ -336,7 +328,7 @@ fileprivate extension Matrix {
             
             if startingRow < rowCount - 1 {
                 for row in startingRow..<rowCount {
-                    guard self[row, startingCol] == 0 else { return false }
+                    guard self[row, startingCol] == .zero else { return false }
                 }
             }
             
@@ -345,19 +337,19 @@ fileprivate extension Matrix {
         }
         
         // make sure this pivot entry is 1!
-        guard self[thisPivotLocation, startingCol] == 1 else { return false }
+        guard self[thisPivotLocation, startingCol] == .one else { return false }
         
         // make sure everything above this entry is zero.
         if thisPivotLocation > 0 {
             for row in 0..<thisPivotLocation {
-                guard self[row, startingCol] == 0 else { return false }
+                guard self[row, startingCol] == .zero else { return false }
             }
         }
         
         return isReducedRowEchelonForm(startingRow: thisPivotLocation + 1, startingCol: startingCol + 1, pivotsRef: &pivotLocations)
     }
     
-    func computeRank() -> Int {
+    private func computeRank() -> Int {
         var pivots = [Int](repeating: 0, count: colCount)
         var ref = self
         Matrix.rowEchelon(on: &ref, pivotsRef: &pivots)
@@ -366,52 +358,27 @@ fileprivate extension Matrix {
         }
     }
     
-    func computeInverse() -> Matrix {
+    private func computeInverse() -> Matrix {
         var rref = self
         var inv = Matrix.identity(forDim: rowCount)
         Matrix.reducedRowEchelon(on: &rref, withRecipient: &inv)
         return inv
     }
     
-    func computeDeterminant() -> Element {
-        // if at any point this is a matrix that can be converted to a SIMD type, USE THAT!
+    static func computeDeterminant(_ matrix: Matrix) -> Element {
         
-        switch colCount {
-        case 4:
-            
-            return simd_double4x4(
-                simd_double4(flatmap[0], flatmap[4], flatmap[8], flatmap[12]),
-                simd_double4(flatmap[1], flatmap[5], flatmap[9], flatmap[13]),
-                simd_double4(flatmap[2], flatmap[6], flatmap[10], flatmap[14]),
-                simd_double4(flatmap[3], flatmap[7], flatmap[11], flatmap[15])
-            ).determinant
-            
-        case 3:
-            
-            return simd_double3x3(
-                simd_double3(flatmap[0], flatmap[3], flatmap[6]),
-                simd_double3(flatmap[1], flatmap[4], flatmap[7]),
-                simd_double3(flatmap[2], flatmap[5], flatmap[8])
-            ).determinant
-
-        case 2:
-            
-            return simd_double2x2(
-                simd_double2(flatmap[0], flatmap[2]),
-                simd_double2(flatmap[1], flatmap[3])
-            ).determinant
-            
-        case 1: return flatmap[0]
+        switch matrix.colCount {
+        case 1: return matrix.flatmap[0]
             
         default: // the recursive case!
             
             // Idea: Maybe search and see if there's a particular row/column that has a lot of zeros, and do co-factor expansion along that?
-            var sum: Element = 0
+            var sum = Element.zero
             
-            for i in 0..<colCount {
-                var scalar = self[0, i]
-                let submatrix = omitting(row: 0).omitting(col: i)
-                let det = submatrix.computeDeterminant()
+            for i in 0..<matrix.colCount {
+                var scalar = matrix[0, i]
+                let submatrix = matrix.omitting(row: 0).omitting(col: i)
+                let det = computeDeterminant(submatrix)
                 
                 if i % 2 == 1 {
                     scalar = -scalar

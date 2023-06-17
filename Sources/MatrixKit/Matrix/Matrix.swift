@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  Matrix.swift
 //  
 //
 //  Created by Sylvan Martin on 6/15/22.
@@ -9,16 +9,11 @@ import Foundation
 import Accelerate
 
 /**
- * A matrix
+ * A matrix with entries in a field
  */
-public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
+public struct Matrix<Element: FieldElement>: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
     
     // MARK: - Typealiases
-    
-    /**
-     * The element of this matrix, equivalent to `Double`.
-     */
-    public typealias Element = Double
     
     public typealias ArrayLiteralElement = [Element]
     
@@ -47,7 +42,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * Creates an empty matrix representing `[0]`
      */
     public init() {
-        self.flatmap = [0]
+        self.flatmap = [.zero]
         self.colCount = 1
         self.rowCount = 1
     }
@@ -69,7 +64,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * Creates a matrix filled of specified dimensions filled with zeros
      */
     public init(rows: Int, cols: Int) {
-        flatmap = [Element](repeating: 0, count: rows * cols)
+        flatmap = [Element](repeating: .zero, count: rows * cols)
         rowCount = rows
         colCount = cols
     }
@@ -185,7 +180,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     public static func identity(forDim dim: Int) -> Matrix {
         var iden = Matrix(rows: dim, cols: dim)
         for i in 0..<dim {
-            iden[i, i] = 1
+            iden[i, i] = .one
         }
         return iden
     }
@@ -199,7 +194,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * - Precondition: `rows >= 1 && cols >= 1`
      */
     public static func zero(rows: Int, cols: Int) -> Matrix {
-        Matrix(flatmap: [Element](repeating: Element.zero, count: rows * cols), cols: cols)
+        Matrix(flatmap: [Element](repeating: .zero, count: rows * cols), cols: cols)
     }
     
     // MARK: Encoding/Decoding
@@ -246,35 +241,12 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
     }
     
     /**
-     * The magnitude of this matrix
-     */
-    public var magnitude: Double {
-        computeMagnitude()
-    }
-    
-    /**
-     * A scale of this matrix with a magnitude of 1
-     */
-    public var normalized: Matrix {
-        var norm = self
-        norm.normalize()
-        return norm
-    }
-    
-    /**
      * A matrix of the same dimensions as this one, but with all elements set to zero
      */
     public var zero: Matrix {
         var new = self
         new.setToZero()
         return new
-    }
-    
-    /**
-     * Computes the matnitude squared of this matrix
-     */
-    public var magnitudeSquared: Double {
-        computeMagnitudeSquared()
     }
     
     /**
@@ -313,7 +285,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * This matrix in rowwise array form
      */
     public var rows: [[Element]] {
-        let rowPattern = [[Element]](repeating: [Element](repeating: 0, count: colCount), count: rowCount)
+        let rowPattern = [[Element]](repeating: [Element](repeating: .zero, count: colCount), count: rowCount)
         return flatmap.overlay(onto: rowPattern)
     }
     
@@ -321,7 +293,7 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
      * This matrix in column-wise array form
      */
     public var columns: [[Element]] {
-        var colArray = [[Element]](repeating: [Element](repeating: 0, count: rowCount), count: colCount)
+        var colArray = [[Element]](repeating: [Element](repeating: .zero, count: rowCount), count: colCount)
         
         for i in 0..<colCount {
             colArray[i] = self[col: i]
@@ -337,7 +309,13 @@ public struct Matrix: CustomStringConvertible, ExpressibleByArrayLiteral, Equata
         if isVector { return Matrix(flatmap) }
         
         var trans = Matrix(rows: colCount, cols: rowCount)
-        computeTranspose(result: &trans)
+        
+        for r in 0..<trans.rowCount {
+            for c in 0..<trans.colCount {
+                trans[r, c] = self[c, r]
+            }
+        }
+        
         return trans
     }
     

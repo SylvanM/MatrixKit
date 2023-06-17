@@ -57,11 +57,11 @@ fileprivate extension Matrix {
         
         pivotsRef.pointee[startingCol] = pivotRow
         
-        if matrix[pivotRow, startingCol] == 0 {
+        if matrix[pivotRow, startingCol] == .zero {
             
             // find the first nonzero entry of this row, and move that to be the pivot.
             for row in (pivotRow + 1)..<matrix.rowCount {
-                if matrix[row, startingCol] != 0 {
+                if matrix[row, startingCol] != .zero {
                     // we found a new pivot possibility! swap it to be the pivot.
                     let swapOp = ElementaryOperation.swap(pivotRow, row)
                     matrix.apply(rowOperation: swapOp)
@@ -84,7 +84,7 @@ fileprivate extension Matrix {
         // at this point, we have a pivot in the right location, so let's eliminate entries below the pivot.
         for row in (pivotRow + 1)..<matrix.rowCount {
             let entry = matrix[row, startingCol]
-            if entry == 0 { continue }
+            if entry == .zero { continue }
             let scalar = -entry / pivotEntry
             
             let elimOp = ElementaryOperation.add(scalar: scalar, index: pivotRow, toIndex: row)
@@ -124,7 +124,7 @@ fileprivate extension Matrix {
         // normalize this row relative to pivot
         let pivotEntry = matrix[pivotRow, startingCol]
         
-        let scalar = 1 / pivotEntry
+        let scalar = pivotEntry.inverse
         
         let normOp = ElementaryOperation.scale(index: pivotRow, by: scalar)
 
@@ -136,7 +136,7 @@ fileprivate extension Matrix {
 
             let entry = matrix[row, startingCol]
 
-            if entry == 0 { continue }
+            if entry == .zero { continue }
 
             let scalar = -entry
             let elimOp = ElementaryOperation.add(scalar: scalar, index: pivotRow, toIndex: row)

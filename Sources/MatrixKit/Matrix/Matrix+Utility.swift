@@ -14,46 +14,6 @@ public extension Matrix {
     // MARK: Creation
     
     /**
-     * Creates a random matrix of specified dimension, generating secure random bytes.
-     *
-     * - Warning: This does **not** guarantee that the elements willl be "friendly" `Double` bit patterns. Generating `nan` may occur.
-     */
-    static func secureRandom(rows: Int, cols: Int) -> Matrix {
-        var rand = Matrix(rows: rows, cols: cols)
-        rand.withMutableBaseAddress { basePtr in
-            _ = SecRandomCopyBytes(kSecRandomDefault, MemoryLayout<Element>.size * (rows * cols), basePtr)
-        }
-        return rand
-    }
-    
-    /**
-     * Creates a random matrix
-     *
-     * - Parameter rows: The amount of rows in the random matrix
-     * - Parameter cols: The amount of columns in the random matrix
-     * - Parameter range: A closed range to guarantee all elements of the matrix are in. By default, this will generate numbers between 0 and 1.
-     *
-     * - Returns: A new, random matrix, with all elements in `range.`
-     */
-    static func random(rows: Int, cols: Int, range: ClosedRange<Element> = 0...1) -> Matrix {
-        random(rows: rows, cols: cols) {
-            Element.random(in: range)
-        }
-    }
-    
-    /**
-     * Creates a random matrix
-     *
-     * - Parameter rows: The amount of rows in the random matrix
-     * - Parameter cols: The amount of columns in the random matrix
-     * - Parameter generator: A way of generating random numbers.
-     */
-    static func random(rows: Int, cols: Int, generator rand: @escaping () -> Element) -> Matrix {
-        let randomFlatmap = [Element](repeating: 0, count: rows * cols).lazy.map { _ in rand() }
-        return Matrix(flatmap: [Element](randomFlatmap), cols: cols)
-    }
-    
-    /**
      * Decodes a matrix from the base address of a buffer of data that encodes this matrix, and updates the base address to point to the next
      * byte after this buffer
      *
@@ -103,14 +63,14 @@ public extension Matrix {
         
         func makeRowString(_ vect: [Element]) -> String {
             
-            let firstString = String(vect.first!)
+            let firstString = vect.first!.description
             
             if vect.count == 1 {
                 return firstString
             }
             
             return vect[1..<colCount].reduce(firstString) { partialResult, elem in
-                partialResult + " & " + String(elem)
+                partialResult + " & " + elem.description
             }
 
         }
@@ -139,11 +99,14 @@ public extension Matrix {
     }
     
     internal func makeRawString() -> String {
-        rows.reduce("") { partialResult, row in
-            partialResult + row.reduce("", { partialResult, elem in
-                partialResult + String(elem) + " "
-            }) + "\n"
+        var string = ""
+        for r in 0..<rowCount {
+            for c in 0..<colCount {
+                string += self[r, c].description + " "
+            }
+            string += "\n"
         }
+        return string
     }
     
     internal func makePrettyString() -> String {
@@ -152,7 +115,7 @@ public extension Matrix {
         
         let entryLengths = columns.map { column in
             column.map { element in
-                String(element).count
+                element.description.count
             }.max()!
         }
         
@@ -215,7 +178,7 @@ public extension Matrix {
      * Returns a new matrix which is identical to `self` with a certain column omitted
      */
     func omitting(col: Int) -> Matrix {
-        var newFlatmap = [Element](repeating: 0, count: flatmap.count - rowCount)
+        var newFlatmap = [Element](repeating: .zero, count: flatmap.count - rowCount)
         
         var i = 0
         var j = 0
@@ -243,7 +206,7 @@ public extension Matrix {
      * Returns a new matrix which is identical to `self` with a certain row omitted
      */
     func omitting(row: Int) -> Matrix {
-        var newFlatmap = [Element](repeating: 0, count: flatmap.count - colCount)
+        var newFlatmap = [Element](repeating: .zero, count: flatmap.count - colCount)
         
         newFlatmap[0..<(row * colCount)] = flatmap[0..<(row * colCount)]
         newFlatmap[(row * colCount)..<newFlatmap.count] = flatmap[((row + 1) * colCount)..<flatmap.count]
@@ -252,29 +215,12 @@ public extension Matrix {
     }
     
     /**
-     * Computes the transpose of this matrix and stores the result in `result
-     *
-     * - Precondition: `result.colCount == self.rowCount && result.rowCount == self.colCount`
-     */
-    internal func computeTranspose(result: inout Matrix) {
-        withBaseAddress { baseAddress in
-            result.withMutableBaseAddress { resultAddress in
-                vDSP_mtransD(baseAddress, 1, resultAddress, 1, UInt(colCount), UInt(rowCount))
-            }
-        }
-    }
-    
-    /**
      * Sets every element of this matrix to zero
      */
     mutating func setToZero() {
-        var new = flatmap
-        
-        new.withUnsafeMutableBufferPointer { buffer in
-            vDSP_vclrD(buffer.baseAddress!, 1, UInt(count))
+        for i in 0..<flatmap.count {
+            flatmap[i] = .zero
         }
-        
-        self.flatmap = new
     }
     
     // MARK: Matrix Concatenation
