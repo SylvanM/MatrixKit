@@ -193,6 +193,18 @@ public extension Matrix {
     // MARK: - Misc Operations
     
     /**
+     * Computes the inner product of this vector and another vector
+     *
+     * - Precondition:
+     */
+    func innerProduct(with other: Matrix) -> Element {
+        assert(self.isVector && other.isVector, "Can only compute inner product of two vectors")
+        assert(self.hasSameDimensions(as: other), "Can only compute inner product of vectors of equal dimension")
+        
+        return (self.transpose * other)[0, 0]
+    }
+    
+    /**
      * Sums accross the columns of this matrix to produce a column vector, whos elements are the sum of each row.
      */
     func rowSum() -> Matrix {
