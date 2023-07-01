@@ -8,9 +8,9 @@
 import Foundation
 
 /**
- * This describes the requirements for any element of a field, usable for the entries of a matrix
+ * This describes the axioms of a ring
  */
-public protocol FieldElement: Equatable, CustomStringConvertible {
+public protocol Ring: Equatable, CustomStringConvertible, AdditiveArithmetic {
     
     // MARK: Properties
     
@@ -24,25 +24,19 @@ public protocol FieldElement: Equatable, CustomStringConvertible {
      */
     static var one: Self { get }
     
-    // MARK: - Field Operations
+    // MARK: Ring Operations
     
     /// Additive Inverse
     static prefix func - (rhs: Self) -> Self
     
-    /// The unique value such that `self.inverse * self == one`
-    var inverse: Self { get }
-    
-    /// Field addition
+    /// Ring addition
     static func + (lhs: Self, rhs: Self) -> Self
     
-    /// Field subtraction
+    /// Ring subtraction
     static func - (lhs: Self, rhs: Self) -> Self
-     
-    /// Field multiplication
-    static func * (lhs: Self, rhs: Self) -> Self
     
-    /// Field division
-    static func / (lhs: Self, rhs: Self) -> Self
+    /// Ring multiplication
+    static func * (lhs: Self, rhs: Self) -> Self
     
     /**
      * Exponentiation, or repeated multiplication
@@ -51,7 +45,7 @@ public protocol FieldElement: Equatable, CustomStringConvertible {
      */
     func pow(_ power: Int) -> Self
     
-    // MARK: Mutable operations
+    // MARK: Mutable Operations
     
     static func += (lhs: inout Self, rhs: Self)
     
@@ -59,23 +53,14 @@ public protocol FieldElement: Equatable, CustomStringConvertible {
     
     static func *= (lhs: inout Self, rhs: Self)
     
-    static func /= (lhs: inout Self, rhs: Self)
-    
 }
 
-/**
- * Some default implementations
- */
-public extension FieldElement {
+public extension Ring {
     
     // MARK: Implied Definitions
     
     static func - (lhs: Self, rhs: Self) -> Self {
         lhs + (-rhs)
-    }
-    
-    static func / (lhs: Self, rhs: Self) -> Self {
-        return lhs * (rhs.inverse)
     }
     
     func pow(_ power: Int) -> Self {
@@ -102,20 +87,58 @@ public extension FieldElement {
         lhs = lhs * rhs
     }
     
+}
+
+/**
+ * This describes the requirements for any element of a field, usable for the entries of a matrix
+ */
+public protocol Field: Ring {
+    
+    // MARK: - Field Operations
+    
+    /// The unique value such that `self.inverse * self == one`
+    var inverse: Self { get }
+    
+    /// Field division
+    static func / (lhs: Self, rhs: Self) -> Self
+    
+    // MARK: Mutable operations
+    
+    static func /= (lhs: inout Self, rhs: Self)
+    
+}
+
+/**
+ * Some default implementations
+ */
+public extension Field {
+    
+    // MARK: Implied Definitions
+    
+    static func / (lhs: Self, rhs: Self) -> Self {
+        return lhs * (rhs.inverse)
+    }
+    
+    // MARK: Mutating Definitions
+    
     static func /= (lhs: inout Self, rhs: Self) {
         lhs = lhs / rhs
     }
     
 }
 
-// Float and Double should, almost by default, conform to this type!
+// MARK: - Built-in Conforming Types
 
-extension Float: FieldElement {
+extension Float: Field {
     public static var one: Float { 1 }
     public var inverse: Float { 1 / self }
 }
 
-extension Double: FieldElement {
+extension Double: Field {
     public static var one: Double { 1 }
     public var inverse: Double { 1 / self }
+}
+
+extension Int: Ring {
+    public static var one: Int { 1 }
 }

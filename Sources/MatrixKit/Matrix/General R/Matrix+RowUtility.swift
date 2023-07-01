@@ -7,7 +7,7 @@
 
 import Foundation
 
-internal extension Matrix {
+internal extension Matrix where Element: Field {
     
     static func rowEchelon(on matrix: inout Matrix, withRecipient recipient: UnsafeMutablePointer<Matrix>? = nil, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) {
         if let pivotsRef = pivotsRef {
@@ -30,7 +30,7 @@ internal extension Matrix {
     
 }
 
-fileprivate extension Matrix {
+fileprivate extension Matrix where Element: Field {
     
     /**
      * Performs row reduction to echelon form, but **not** necessarily *reduced* row echelon form, This should *only* be called from `rowEchelon`

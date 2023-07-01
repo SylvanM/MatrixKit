@@ -11,7 +11,7 @@ import MatrixKit
 import BigNumber
 
 // We want to be able to generate elements from this field for testing!
-protocol TestableFieldElement: FieldElement {
+protocol TestableFieldElement: Field {
     
     static func random() -> Self
     

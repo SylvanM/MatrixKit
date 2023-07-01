@@ -89,6 +89,10 @@ public extension Matrix {
         Matrix<Element>.computeDeterminant(self)
     }
     
+}
+
+public extension Matrix where Element: Field {
+    
     /**
      * This matrix in row echelon form.
      *
@@ -171,15 +175,6 @@ public extension Matrix {
         computeInverse()
     }
     
-    // MARK: - Spaces
-
-    /**
-     * A matrix whose columns form the basis of the kernel of `self`
-     */
-    var kernel: Matrix {
-        computeKernel()
-    }
-    
     // MARK: - Eigenvalues
     
     /**
@@ -193,6 +188,15 @@ public extension Matrix {
         let firstScalar = out[0, 0] / vect[0, 0]
         
         return vect * firstScalar == out
+    }
+    
+    // MARK: - Spaces
+
+    /**
+     * A matrix whose columns form the basis of the kernel of `self`
+     */
+    var kernel: Matrix {
+        computeKernel()
     }
     
 }
@@ -349,22 +353,6 @@ fileprivate extension Matrix {
         return isReducedRowEchelonForm(startingRow: thisPivotLocation + 1, startingCol: startingCol + 1, pivotsRef: &pivotLocations)
     }
     
-    private func computeRank() -> Int {
-        var pivots = [Int](repeating: 0, count: colCount)
-        var ref = self
-        Matrix.rowEchelon(on: &ref, pivotsRef: &pivots)
-        return pivots.reduce(into: 0) { partialResult, pivotLoc in
-            partialResult += pivotLoc == -1 ? 0 : 1
-        }
-    }
-    
-    private func computeInverse() -> Matrix {
-        var rref = self
-        var inv = Matrix.identity(forDim: rowCount)
-        Matrix.reducedRowEchelon(on: &rref, withRecipient: &inv)
-        return inv
-    }
-    
     static func computeDeterminant(_ matrix: Matrix) -> Element {
         
         switch matrix.colCount {
@@ -389,6 +377,26 @@ fileprivate extension Matrix {
             
             return sum
         }
+    }
+    
+}
+
+fileprivate extension Matrix where Element: Field {
+    
+    private func computeRank() -> Int {
+        var pivots = [Int](repeating: 0, count: colCount)
+        var ref = self
+        Matrix.rowEchelon(on: &ref, pivotsRef: &pivots)
+        return pivots.reduce(into: 0) { partialResult, pivotLoc in
+            partialResult += pivotLoc == -1 ? 0 : 1
+        }
+    }
+    
+    private func computeInverse() -> Matrix {
+        var rref = self
+        var inv = Matrix.identity(forDim: rowCount)
+        Matrix.reducedRowEchelon(on: &rref, withRecipient: &inv)
+        return inv
     }
     
     // MARK: Kernel Stuff

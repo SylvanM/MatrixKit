@@ -11,7 +11,7 @@ import Accelerate
 /**
  * A matrix with entries in a field
  */
-public struct Matrix<Element: FieldElement>: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
+public struct Matrix<Element: Ring>: CustomStringConvertible, ExpressibleByArrayLiteral, Equatable {
     
     // MARK: - Typealiases
     

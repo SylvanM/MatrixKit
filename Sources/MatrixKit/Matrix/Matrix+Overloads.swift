@@ -22,10 +22,6 @@ public extension Matrix {
         lhs.equals(rhs)
     }
     
-    static func ~ (lhs: Matrix, rhs: Matrix) -> Bool {
-        lhs.isRowEquivalent(to: rhs)
-    }
-    
     // MARK: Matrix Math
     
     static func + (lhs: Matrix, rhs: Matrix) -> Matrix {
@@ -62,6 +58,14 @@ public extension Matrix {
     
 }
 
+public extension Matrix where Element: Field {
+    
+    static func ~ (lhs: Matrix, rhs: Matrix) -> Bool {
+        lhs.isRowEquivalent(to: rhs)
+    }
+    
+}
+
 fileprivate extension Matrix {
     
     // MARK: - Comparisons
@@ -71,13 +75,6 @@ fileprivate extension Matrix {
      */
     func equals(_ other: Matrix) -> Bool {
         self.colCount == other.colCount && self.flatmap == other.flatmap
-    }
-    
-    /**
-     * Returns `true` if `other` can be obtained by applying row operations to `self`
-     */
-    func isRowEquivalent(to other: Matrix) -> Bool {
-        self.rank == other.rank && (self.colCount, self.rowCount) == (other.colCount, other.colCount)
     }
     
     // MARK: Matrix Operations
@@ -185,6 +182,17 @@ fileprivate extension Matrix {
         }
         
         return product
+    }
+    
+}
+
+fileprivate extension Matrix where Element: Field {
+    
+    /**
+     * Returns `true` if `other` can be obtained by applying row operations to `self`
+     */
+    func isRowEquivalent(to other: Matrix) -> Bool {
+        self.rank == other.rank && (self.colCount, self.rowCount) == (other.colCount, other.colCount)
     }
     
 }
