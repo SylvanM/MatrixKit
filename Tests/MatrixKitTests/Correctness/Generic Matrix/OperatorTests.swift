@@ -12,6 +12,7 @@ import XCTest
 class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     
     override func run() {
+        print("Running OperatorTests with Element = \(Element.self)")
         testAdd()
         testSub()
         testMul()
@@ -20,6 +21,8 @@ class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     // MARK: Operator Tests
 
     func testAdd() {
+        print("testing ADD")
+        
         let cols = Int.random(in: 10...100)
         let rows = Int.random(in: 10...100)
         
@@ -42,6 +45,7 @@ class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     }
     
     func testSub() {
+        print("testing SUB")
         let cols = Int.random(in: 10...100)
         let rows = Int.random(in: 10...100)
         
@@ -64,6 +68,8 @@ class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     }
     
     func testMul() {
+        print("testing MUL")
+        
         let rows = Int.random(in: 5...5)
         let innerDim1 = Int.random(in: 5...5)
         let innerDim2 = Int.random(in: 5...5)
@@ -85,7 +91,8 @@ class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
         
         XCTAssertEqual(A * (B + C), A * B + A * C)
         
-        for _ in 1...100 {
+        for i in 1...100 {
+            print(i)
             let matrix = Matrix<Element>.random(rows: rows, cols: rows)
             if matrix.determinant == .zero { continue }
             XCTAssertEqual(matrix.inverse * matrix, .identity(forDim: rows))

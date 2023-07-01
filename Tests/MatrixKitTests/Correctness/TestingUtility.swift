@@ -8,6 +8,7 @@
 
 import Foundation
 import MatrixKit
+import BigNumber
 
 // We want to be able to generate elements from this field for testing!
 protocol TestableFieldElement: FieldElement {
@@ -121,6 +122,68 @@ struct ZM5: TestableFieldElement, ExpressibleByIntegerLiteral {
     }
     
 }
+
+/**
+ * Z mod p, where `p` is the prime `2^255 - 19`
+ */
+public struct ZMP: TestableFieldElement {
+    
+    public static let modulus: UBN = "0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffed"
+
+    public typealias RawValue = UBigNumber
+    
+    public static var zero: ZMP = ZMP(value: .zero)
+    
+    public static let one: ZMP = ZMP(value: UBN(1))
+    
+    public var inverse: ZMP {
+        ZMP(value: value.invMod(ZMP.modulus))
+    }
+    
+    public var description: String {
+        value.description
+    }
+    
+    // MARK: Properties
+    
+    public var value: UBigNumber
+    
+    // MARK: Initializers
+    
+    public init(value: UBigNumber) {
+        self.value = value % ZMP.modulus
+    }
+    
+    // MARK: Operators
+    
+    public static prefix func - (rhs: ZMP) -> ZMP {
+        ZMP(value: modulus - rhs.value)
+    }
+    
+    public static func * (lhs: ZMP, rhs: ZMP) -> ZMP {
+        ZMP(value: (lhs.value % modulus) * (rhs.value % modulus))
+    }
+    
+    public static func + (lhs: ZMP, rhs: ZMP) -> ZMP {
+        ZMP(value: lhs.value + rhs.value)
+    }
+    
+    public static func / (lhs: ZMP, rhs: ZMP) -> ZMP {
+        lhs * rhs.inverse
+    }
+    
+    // MARK: Utility
+    
+    public static func random() -> ZMP {
+        ZMP(value: .random(in: 0..<modulus))
+    }
+    
+    public static func random(in range: Range<UBigNumber>) -> ZMP {
+        ZMP(value: UBigNumber.random(in: range))
+    }
+    
+}
+
 
 /**
  * A field type which is a facade for a `Double` to test regular `Double` operations but forcing `Matrix` to use the generic implementations

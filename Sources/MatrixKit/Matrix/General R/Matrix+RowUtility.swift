@@ -111,8 +111,6 @@ fileprivate extension Matrix {
             return // we're done
         }
         
-        
-        
         let pivotRow = pivotsRef.pointee[startingCol]
         
         if pivotRow == -1 {

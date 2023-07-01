@@ -1,5 +1,5 @@
 //
-//  MathPropertiesTest.swift
+//  MathPropertiesTests.swift
 //  
 //
 //  Created by Sylvan Martin on 6/3/23.
@@ -9,9 +9,10 @@ import Foundation
 import MatrixKit
 import XCTest
 
-class MathPropertiesTest<Element: TestableFieldElement>: XCTest, MKTestSuite {
+class MathPropertiesTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     
     override func run() {
+        print("Running MathPropertiesTests with Element = \(Element.self)")
         testKernel()
         testLinearOperation()
     }

@@ -345,6 +345,30 @@ public struct Matrix<Element: FieldElement>: CustomStringConvertible, Expressibl
         }
     }
     
+    internal func withUnsafeBufferPointer(_ closure: (UnsafeBufferPointer<Element>) -> ()) {
+        flatmap.withUnsafeBufferPointer { buffPtr in
+            closure(buffPtr)
+        }
+    }
+    
+    internal func withUnsafeBufferPointer<T>(_ closure: (UnsafeBufferPointer<Element>) -> T) -> T {
+        flatmap.withUnsafeBufferPointer { buffPtr in
+            closure(buffPtr)
+        }
+    }
+    
+    internal mutating func withUnsafeMutableBufferPointer(_ closure: (UnsafeMutableBufferPointer<Element>) -> ()) {
+        flatmap.withUnsafeMutableBufferPointer { buffPtr in
+            closure(buffPtr)
+        }
+    }
+    
+    internal mutating func withUnsafeMutableBufferPointer<T>(_ closure: (UnsafeMutableBufferPointer<Element>) -> T) -> T {
+        flatmap.withUnsafeMutableBufferPointer { buffPtr in
+            closure(buffPtr)
+        }
+    }
+    
     // MARK: Enumerations
     
     /**

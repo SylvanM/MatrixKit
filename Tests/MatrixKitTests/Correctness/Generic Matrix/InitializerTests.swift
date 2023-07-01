@@ -11,6 +11,7 @@ import XCTest
 
 class InitializerTests<Element: TestableFieldElement>: XCTest, MKTestSuite {    
     override func run() {
+        print("Running InitializerTests with Element = \(Element.self)")
         testBasicInit()
         testArrayInit()
         testDimInit()
@@ -59,6 +60,9 @@ class InitializerTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
                 }
             }
         }
+        
+        let a = [Element](repeating: .zero, count: 10)
+        print(a)
     }
     
 }
