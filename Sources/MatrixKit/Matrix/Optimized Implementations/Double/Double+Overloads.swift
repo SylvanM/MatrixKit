@@ -135,9 +135,6 @@ fileprivate extension Matrix where Element == Double {
     
     func leftMultiply(by lhs: Matrix) -> Matrix {
         
-        print("Using DOUBLE mult")
-        
-        
         assert(lhs.colCount == self.rowCount, "Invalid dimensions for matrix multiplcation")
         
         var product = Matrix(rows: lhs.rowCount, cols: self.colCount)

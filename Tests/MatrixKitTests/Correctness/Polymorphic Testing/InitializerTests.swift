@@ -15,6 +15,18 @@ class InitializerTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
         testBasicInit()
         testArrayInit()
         testDimInit()
+        testLiteralInit()
+        testRowArrayInit()
+        testOtherInit()
+        testVectorInit()
+        testColArrayInit()
+        testFlatmapInit()
+        testDataInit()
+        testBufferInit()
+        testValueAtInit()
+        
+        testIdentity()
+        testZero()
     }
     
     // MARK: Initializer Tests
@@ -60,9 +72,52 @@ class InitializerTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
                 }
             }
         }
-        
-        let a = [Element](repeating: .zero, count: 10)
-        print(a)
+    }
+    
+    func testLiteralInit() {
+#warning("Unimplemented")
+    }
+    
+    func testRowArrayInit() {
+#warning("Unimplemented")
+    }
+    
+    func testOtherInit() {
+#warning("Unimplemented")
+    }
+    
+    func testVectorInit() {
+#warning("Unimplemented")
+    }
+    
+    func testColArrayInit() {
+#warning("Unimplemented")
+    }
+    
+    func testFlatmapInit() {
+#warning("Unimplemented")
+    }
+    
+    func testDataInit() {
+#warning("Unimplemented")
+    }
+    
+    func testBufferInit() {
+#warning("Unimplemented")
+    }
+    
+    func testValueAtInit() {
+#warning("Unimplemented")
+    }
+    
+    // MARK: Static Producer Tests
+    
+    func testIdentity() {
+#warning("Unimplemented")
+    }
+    
+    func testZero() {
+#warning("Unimplemented")
     }
     
 }

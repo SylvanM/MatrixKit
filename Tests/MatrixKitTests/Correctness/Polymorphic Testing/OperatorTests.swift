@@ -92,13 +92,44 @@ class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
         XCTAssertEqual(A * (B + C), A * B + A * C)
         
         for i in 1...100 {
-            print(i)
             let matrix = Matrix<Element>.random(rows: rows, cols: rows)
             if matrix.determinant == .zero { continue }
             XCTAssertEqual(matrix.inverse * matrix, .identity(forDim: rows))
             XCTAssertEqual(matrix * matrix.inverse, .identity(forDim: rows))
         }
         
+    }
+    
+    // MARK: Advaced Operators
+    
+    func testPow() {
+#warning("Unimplemented")
+    }
+    
+    func testSameDimension() {
+#warning("Unimplemented")
+    }
+    
+    func testHadamard() {
+#warning("Unimplemented")
+    }
+    
+    func testDotProduct() {
+#warning("Unimplemented")
+    }
+    
+    // MARK: Row Operations
+    
+    func testRowOperations() {
+#warning("Unimplemented")
+    }
+    
+    func testRowSum() {
+#warning("Unimplemented")
+    }
+    
+    func testRowEquivalence() {
+#warning("Unimplemented")
     }
 
 }

@@ -110,7 +110,7 @@ fileprivate extension Matrix where Element == Double {
     /**
      * Computes the magnitude squared of this matrix. That is, the sum of the squares of all elements of the matrix
      */
-    internal func computeMagnitudeSquared() -> Double {
+    func computeMagnitudeSquared() -> Double {
         withBaseAddress { baseAddress in
             // TODO: Right now this can only take a 32 bit integer as the size, so eventally might have to
             // split the computation up for larger vectors.

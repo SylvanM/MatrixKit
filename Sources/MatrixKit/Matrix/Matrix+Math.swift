@@ -80,83 +80,9 @@ public extension Matrix {
         triangularity == .diagonal
     }
     
-    /**
-     * Computes the determinant of a matrix
-     *
-     * - Precondition: `isSquare` and `colCount >= 1`
-     */
-    var determinant: Element {
-        Matrix<Element>.computeDeterminant(self)
-    }
-    
 }
 
 public extension Matrix where Element: Field {
-    
-    /**
-     * This matrix in row echelon form.
-     *
-     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
-     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form
-     */
-    var rowEchelonForm: Matrix {
-        // TODO: Speed check this to see if this is really worth checking
-
-        if isRowEchelonForm {
-            return self
-        }
-        
-        var ref = self
-        Matrix.rowEchelon(on: &ref)
-        return ref
-    }
-    
-    /**
-     * `true` if this matrix is in row echelon form.
-     *
-     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
-     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form
-     *
-     * Here's an interesting problem. Inside this function, the rank is easily computed with little additional computation.
-     * How can I not waste computation time when reading the `rank` property if a matrix is already in row echelon form?
-     *
-     * I can think of some really messy ways to do it, but I really want to avoid adding a  `didSet` listener on `flatmap`
-     * to see if the matrix is updated and the rank needs to be re-calculated.
-     */
-    var isRowEchelonForm: Bool {
-        isRowEchelonForm()
-    }
-    
-    /**
-     * This matrix in reduced row echelon form.
-     *
-     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
-     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
-     */
-    var reducedRowEchelonForm: Matrix {
-        // TODO: Maybe add a check to see if this is already in reduced row echelon form?
-        
-        var rref = self
-        Matrix.reducedRowEchelon(on: &rref)
-        return rref
-    }
-    
-    /**
-     * `true` if this matrix is in *reduced* row echelon form.
-     *
-     * Different authors use different meanings of "row echelon form" versus "*reduced* row echelon form", so for clarity,
-     * I am using the same definitions as are used here: https://en.wikipedia.org/wiki/Row_echelon_form#Reduced_row_echelon_form
-     */
-    var isReducedRowEchelonForm: Bool {
-        isReducedRowEchelonForm()
-    }
-    
-    /**
-     * The rank of this matrix
-     */
-    var rank: Int {
-        computeRank()
-    }
     
     /**
      * Whether or not this matrix is invertible
@@ -164,15 +90,6 @@ public extension Matrix where Element: Field {
     var isInvertible: Bool {
         guard isSquare else { return false }
         return rank == rowCount
-    }
-    
-    /**
-     * The matrix `A` such that `A * self` is the identity matrix of this matrix.
-     *
-     * Requires `self.isSquare`.
-     */
-    var inverse: Matrix {
-        computeInverse()
     }
     
     // MARK: - Eigenvalues
@@ -185,18 +102,19 @@ public extension Matrix where Element: Field {
     func isEigenvector(_ vect: Matrix) -> Bool {
         let out = self * vect
         
-        let firstScalar = out[0, 0] / vect[0, 0]
+        if vect.isZero {
+            return false
+        }
+        
+        var firstNonzeroEntry = 0
+        
+        while vect[firstNonzeroEntry, 0] == .zero {
+            firstNonzeroEntry += 1
+        }
+        
+        let firstScalar = out[firstNonzeroEntry, 0] / vect[firstNonzeroEntry, 0]
         
         return vect * firstScalar == out
-    }
-    
-    // MARK: - Spaces
-
-    /**
-     * A matrix whose columns form the basis of the kernel of `self`
-     */
-    var kernel: Matrix {
-        computeKernel()
     }
     
 }
@@ -206,235 +124,55 @@ public extension Matrix where Element: Field {
  */
 fileprivate extension Matrix {
     
-    func isUpperTriangular(startingRow: Int = 0) -> Triangularity {
-        if startingRow == rowCount - 1 { return .upper }
+    func isUpperTriangular(startingIndex: Int = 0) -> Triangularity {
+        if startingIndex >= colCount - 1 { return .upper }
         
-        for r in (startingRow + 1)..<rowCount {
-            if self[r, startingRow] != .zero {
+        for r in (startingIndex + 1)..<rowCount {
+            if self[r, startingIndex] != .zero {
                 return .none
             }
         }
         
-        return isUpperTriangular(startingRow: startingRow + 1)
-        
+        return isUpperTriangular(startingIndex: startingIndex + 1)
     }
     
-    func isLowerTriangular(startingRow: Int = 0) -> Triangularity {
-        if startingRow == rowCount - 1 { return .lower }
+    func isLowerTriangular(startingIndex: Int = 0) -> Triangularity {
+        if startingIndex >= colCount { return .lower }
         
-        for c in (startingRow + 1)..<colCount {
-            if self[startingRow, c] != .zero {
+        for r in 0..<startingIndex {
+            if self[r, startingIndex] != .zero {
                 return .none
             }
         }
         
-        return isLowerTriangular(startingRow: startingRow + 1)
+        return isLowerTriangular(startingIndex: startingIndex + 1)
     }
     
     /**
      * This assumes the matrix is square
      */
-    func getTriangularity(startingRow: Int) -> Triangularity {
-        if startingRow == rowCount - 1 { return .diagonal }
+    func getTriangularity(startingIndex: Int) -> Triangularity {
+        if startingIndex == rowCount { return .diagonal }
         
-        for c in (startingRow + 1)..<colCount {
-            if self[startingRow, c] != .zero {
-                return isUpperTriangular(startingRow: startingRow)
+        for r in 0..<startingIndex {
+            if self[r, startingIndex] != .zero {
+                return isUpperTriangular(startingIndex: startingIndex)
             }
         }
         
-        for r in (startingRow + 1)..<rowCount {
-            if self[r, startingRow] != .zero {
-                return isLowerTriangular(startingRow: startingRow)
+        for r in (startingIndex + 1)..<rowCount {
+            if self[r, startingIndex] != .zero {
+                return isLowerTriangular(startingIndex: startingIndex)
             }
         }
         
-        return getTriangularity(startingRow: startingRow + 1)
+        return getTriangularity(startingIndex: startingIndex + 1)
     }
     
     func getTriangularity() -> Triangularity {
         if !isSquare { return .none }
-        return getTriangularity(startingRow: 0)
-    }
-    
-    /**
-     * This function also contains a reference to an array that contains the locations of the pivots so that we don't have to re-find the pivots
-     * when checking if this is also reduced row echelon form.
-     *
-     * - Parameter pivotsRef: A pointer to an array `pivots` such that `pivots.count == self.colCount`, where `pivots[i]` is the
-     * row in which the pivot in column `i` is in `rowEchelonForm`. If there is no pivot in this column, then `pivots[i] == -1`.
-     *
-     * - Precondition: If this function is called non-recursively, it *must* not be given any parameters other than the default parameter values.
-     */
-    private func isRowEchelonForm(startingRow: Int = 0, startingCol: Int = 0, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) -> Bool {
-        
-        if startingRow >= rowCount || startingCol >= colCount {
-            return true
-        }
-        
-        let pivotEntry = self[startingRow, startingCol]
-        
-        if startingRow != rowCount - 1 {
-            for row in (startingRow + 1)..<rowCount {
-                if self[row, startingCol] != .zero {
-                    return false
-                }
-            }
-        }
-        
-        if pivotEntry == .zero {
-            // the rest of this column is all zeros, so just look at the next column over.
-            
-            pivotsRef?.pointee[startingRow] = -1
-            
-            // we've established that the rest of this column is zero, so now just check the next column.
-            return isRowEchelonForm(startingRow: startingRow, startingCol: startingCol + 1, pivotsRef: pivotsRef)
-        }
-        
-        pivotsRef?.pointee[startingRow] = startingCol
-        return isRowEchelonForm(startingRow: startingRow + 1, startingCol: startingCol + 1, pivotsRef: pivotsRef)
-        
-    }
-    
-    /**
-     * - Precondition: If this function is called non-recursively, it *must* not be given any parameters other than the default parameter values.
-     * - Precondition: `pivotLocations` is only an empty array on this function's first call. Otherwise, it contains a list of pivot locations.
-     */
-    private func isReducedRowEchelonForm(startingRow: Int = 0, startingCol: Int = 0, pivotsRef: UnsafeMutablePointer<[Int]>? = nil) -> Bool {
-        
-        // this could probably be simplified way more by just looping through pivotsRef.pointee,
-        // then based off whether we see a -1 or not, check either the whole column or just below the pivot.
-        // wait, am I basically already doing just that?
-        
-        if startingRow >= rowCount || startingCol >= colCount {
-            return true
-        }
-        
-        var pivotLocations = [Int](repeating: 0, count: colCount)
-        
-        if startingRow == 0 && startingCol == 0 {
-            // this is our first call, so check that we are row echelon first.
-            guard isRowEchelonForm(pivotsRef: &pivotLocations) else { return false }
-            
-        } else {
-            pivotLocations = pivotsRef!.pointee
-        }
-        
-        // at this point we are guaranteed to have a matrix in row echelon form, so now
-        // just make sure it's reduced.
-        
-        // the location of the pivot in this row. if this is -1, just go onto the next row.
-        let thisPivotLocation = pivotLocations[startingCol]
-        
-        if thisPivotLocation == -1 {
-            // make sure everything below this entry is zero, but other than that,
-            // we can move on.
-            
-            if startingRow < rowCount - 1 {
-                for row in startingRow..<rowCount {
-                    guard self[row, startingCol] == .zero else { return false }
-                }
-            }
-            
-            return isReducedRowEchelonForm(startingRow: startingRow, startingCol: startingCol + 1, pivotsRef: &pivotLocations)
-            
-        }
-        
-        // make sure this pivot entry is 1!
-        guard self[thisPivotLocation, startingCol] == .one else { return false }
-        
-        // make sure everything above this entry is zero.
-        if thisPivotLocation > 0 {
-            for row in 0..<thisPivotLocation {
-                guard self[row, startingCol] == .zero else { return false }
-            }
-        }
-        
-        return isReducedRowEchelonForm(startingRow: thisPivotLocation + 1, startingCol: startingCol + 1, pivotsRef: &pivotLocations)
-    }
-    
-    static func computeDeterminant(_ matrix: Matrix) -> Element {
-        
-        switch matrix.colCount {
-        case 1: return matrix.flatmap[0]
-            
-        default: // the recursive case!
-            
-            // Idea: Maybe search and see if there's a particular row/column that has a lot of zeros, and do co-factor expansion along that?
-            var sum = Element.zero
-            
-            for i in 0..<matrix.colCount {
-                var scalar = matrix[0, i]
-                let submatrix = matrix.omitting(row: 0).omitting(col: i)
-                let det = computeDeterminant(submatrix)
-                
-                if i % 2 == 1 {
-                    scalar = -scalar
-                }
-                
-                sum += scalar * det
-            }
-            
-            return sum
-        }
-    }
-    
-}
-
-fileprivate extension Matrix where Element: Field {
-    
-    private func computeRank() -> Int {
-        var pivots = [Int](repeating: 0, count: colCount)
-        var ref = self
-        Matrix.rowEchelon(on: &ref, pivotsRef: &pivots)
-        return pivots.reduce(into: 0) { partialResult, pivotLoc in
-            partialResult += pivotLoc == -1 ? 0 : 1
-        }
-    }
-    
-    private func computeInverse() -> Matrix {
-        var rref = self
-        var inv = Matrix.identity(forDim: rowCount)
-        Matrix.reducedRowEchelon(on: &rref, withRecipient: &inv)
-        return inv
-    }
-    
-    // MARK: Kernel Stuff
-    
-    /**
-     * Computes the kernel of this matrix as a linear transformation
-     *
-     * - Returns a matrix whos columns are the basis of the kernel of `self`
-     */
-    func computeKernel() -> Matrix {
-        
-        var pivots = [Int](repeating: 0, count: colCount)
-        var ref = self
-        
-        Matrix.rowEchelon(on: &ref, pivotsRef: &pivots)
-        
-        var tref = ref.transpose
-        
-        // doing row operations is the same as col ops on transpose
-        var recipient = Matrix.identity(forDim: tref.rowCount)
-        Matrix.reducedRowEchelon(on: &tref, withRecipient: &recipient)
-        
-        let alteredIden = recipient.transpose
-        
-        // compute the dimension of the kernel
-        
-        let rank = pivots.reduce(into: 0) { partialResult, pivotLoc in
-            partialResult += pivotLoc == -1 ? 0 : 1
-        }
-        
-        let kernelDim = colCount - rank
-        
-        if kernelDim == 0 {
-            return Matrix.zero(rows: colCount, cols: 1)
-        }
-        
-        return alteredIden[0..<alteredIden.rowCount, rank..<alteredIden.colCount]
-        
+        if colCount == 1 { return .diagonal }
+        return getTriangularity(startingIndex: 0)
     }
     
 }

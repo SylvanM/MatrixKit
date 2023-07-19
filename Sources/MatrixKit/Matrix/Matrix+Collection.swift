@@ -118,6 +118,27 @@ extension Matrix: Collection {
         }
     }
     
+    public subscript(rows rows: ClosedRange<Int>, cols cols: ClosedRange<Int>) -> Matrix {
+        get { self[rows: rows.lowerBound..<(rows.upperBound + 1), cols: cols.lowerBound..<(cols.upperBound + 1)] }
+        set {
+            self[rows: rows.lowerBound..<(rows.upperBound + 1), cols: cols.lowerBound..<(cols.upperBound + 1)] = newValue
+        }
+    }
+    
+    public subscript(rows rows: ClosedRange<Int>, cols cols: Range<Int>) -> Matrix {
+        get { self[rows: rows.lowerBound..<(rows.upperBound + 1), cols: cols] }
+        set {
+            self[rows: rows.lowerBound..<(rows.upperBound + 1), cols: cols] = newValue
+        }
+    }
+    
+    public subscript(rows rows: Range<Int>, cols cols: ClosedRange<Int>) -> Matrix {
+        get { self[rows: rows, cols: cols.lowerBound..<(cols.upperBound + 1)] }
+        set {
+            self[rows: rows, cols: cols.lowerBound..<(cols.upperBound + 1)] = newValue
+        }
+    }
+    
     /**
      * Accesses a sub-matrix of this matrix by value
      */

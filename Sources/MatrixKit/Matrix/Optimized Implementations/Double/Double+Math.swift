@@ -19,7 +19,6 @@ public extension Matrix where Element == Double {
 fileprivate extension Matrix where Element == Double {
     
     static func computeDeterminant(_ matrix: Matrix) -> Element {
-        print("Using DOUBLE det")
         // if at any point this is a matrix that can be converted to a SIMD type, USE THAT!
         
         switch matrix.colCount {
