@@ -117,6 +117,27 @@ public extension Matrix where Element: Field {
         return vect * firstScalar == out
     }
     
+    // MARK: Algorithms and Projections
+    
+    /**
+     * Projects this vector onto another vector
+     *
+     * - Parameter vector: The vector to project `self` onto
+     *
+     * - Precondition: `vector.isVector` and `vector.rowCount == self.rowCount`
+     *
+     * - Returns: The projected form of `self` onto another vector
+     */
+    func project(onto vector: Matrix<Element>) -> Matrix<Element> {
+        assert(self.isVector)
+        assert(vector.isVector)
+        assert(self.rowCount == vector.rowCount)
+        
+        let scalar = self.innerProduct(with: vector) / vector.innerProduct(with: vector)
+        
+        return scalar * vector
+    }
+    
 }
 
 /**

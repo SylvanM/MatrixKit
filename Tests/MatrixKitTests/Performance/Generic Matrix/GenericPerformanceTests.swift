@@ -36,6 +36,10 @@ struct OperationCounter: Field {
     
     var description: String { "Dummy value" }
     
+    var squareRoot: OperationCounter {
+        OperationCounter()
+    }
+    
     static var negations: UInt = 0
     static var additions: UInt = 0
     static var subtractions: UInt = 0

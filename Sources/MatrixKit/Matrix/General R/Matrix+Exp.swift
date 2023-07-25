@@ -9,8 +9,14 @@ import Foundation
  
 extension Matrix where Element == Double {
     
-    fileprivate static func factorial(_ x: Double) -> Double {
-        return 0
+    fileprivate static func factorial(_ x: Int) -> Int {
+        var factorial = 1
+        
+        for i in 1...x {
+            factorial *= i
+        }
+        
+        return factorial
     }
     
     /**
@@ -25,7 +31,7 @@ extension Matrix where Element == Double {
         var sum = zero(rows: m.rowCount, cols: m.colCount)
         
         for n in 0...precision {
-            sum += (m.pow(n)) * (1 / factorial(Double(n)))
+            sum += (m.pow(n)) * (1 / Double(factorial(n)))
         }
         
         return sum
@@ -35,8 +41,14 @@ extension Matrix where Element == Double {
 
 extension Matrix where Element == Float {
     
-    private static func factorial(_ x: Float) -> Float {
-        return 0
+    fileprivate static func factorial(_ x: Int) -> Int {
+        var factorial = 1
+        
+        for i in 1...x {
+            factorial *= i
+        }
+        
+        return factorial
     }
     
     /**
@@ -51,9 +63,7 @@ extension Matrix where Element == Float {
         var sum = zero(rows: m.rowCount, cols: m.colCount)
         
         for n in 0...precision {
-            sum += (
-                (m.pow(n)) * (1 / factorial(Float(n)))
-            )
+            sum += (m.pow(n)) * (1 / Float(factorial(n)))
         }
         
         return sum

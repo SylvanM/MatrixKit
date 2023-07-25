@@ -41,6 +41,10 @@ struct TrivialField: TestableFieldElement {
         TrivialField()
     }
     
+    var squareRoot: TrivialField {
+        TrivialField()
+    }
+    
     var description: String {
         "0"
     }
