@@ -15,7 +15,6 @@ class InitializerTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
         testBasicInit()
         testArrayInit()
         testDimInit()
-        testLiteralInit()
         testRowArrayInit()
         testOtherInit()
         testVectorInit()
@@ -72,10 +71,6 @@ class InitializerTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
                 }
             }
         }
-    }
-    
-    func testLiteralInit() {
-#warning("Unimplemented")
     }
     
     func testRowArrayInit() {

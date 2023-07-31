@@ -32,6 +32,10 @@ public extension Matrix {
         lhs.add(rhs)
     }
     
+    static prefix func - (rhs: Matrix) -> Matrix {
+        Matrix<Element>.zero(rows: rhs.rowCount, cols: rhs.colCount) - rhs
+    }
+    
     static func - (lhs: Matrix, rhs: Matrix) -> Matrix {
         lhs.difference(subtracting: rhs)
     }

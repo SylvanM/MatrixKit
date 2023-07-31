@@ -14,7 +14,6 @@ class MathPropertiesTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     override func run() {
         print("Running MathPropertiesTests with Element = \(Element.self)")
         testIsSquare()
-        testDescriptions()
         testTranspose()
         testIsZero()
         testTriangularity()
@@ -47,10 +46,6 @@ class MathPropertiesTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
             XCTAssertFalse(rect.isSquare)
         }
         
-    }
-    
-    func testDescriptions() {
-#warning("Unimplemented")
     }
     
     func testTranspose() {

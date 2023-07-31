@@ -15,27 +15,23 @@ class CollectionTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
         print("Running CollectionTests with Element = \(Element.self)")
         
         testIterator()
-        testIndices()
-        testSubscripts()
-        testOnAll()
     }
     
     // MARK: Collection Testing
     
     func testIterator() {
-        #warning("Unimplemented")
-    }
-    
-    func testIndices() {
-        #warning("Unimplemented")
-    }
-    
-    func testSubscripts() {
-        #warning("Unimplemented")
-    }
-    
-    func testOnAll() {
-        #warning("Unimplemented")
+        print("Running Iterator Tests")
+        
+        for _ in 1...100 {
+            let n = Int.random(in: 1...100)
+            let m = Int.random(in: 1...100)
+            
+            let matrix = Matrix<Element>.zero(rows: n, cols: m)
+            
+            for a in matrix {
+                XCTAssert(a == .zero)
+            }
+        }
     }
 
 }

@@ -103,11 +103,22 @@ class OperatorTests<Element: TestableFieldElement>: XCTest, MKTestSuite {
     // MARK: Advaced Operators
     
     func testPow() {
-#warning("Unimplemented")
+        for _ in 1...100 {
+            let n = Int.random(in: 1...100)
+            let matrix = Matrix<Element>.random(rows: n, cols: n)
+            let power = Int.random(in: 0...100)
+            var raised = Matrix<Element>.identity(forDim: n)
+            
+            for _ in 1...power {
+                raised = matrix * raised
+            }
+            
+            XCTAssertEqual(raised, matrix.pow(power))
+        }
     }
     
     func testSameDimension() {
-#warning("Unimplemented")
+        
     }
     
     func testHadamard() {
